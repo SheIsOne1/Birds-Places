@@ -204,6 +204,60 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
 .ace-close:hover{background:rgba(255,255,255,.2)}
 .ace-owned .ar-bonus-scan{opacity:.65;cursor:default;border-style:solid;background:#f0fdf4;border-color:#16a34a;color:#166534}
 
+/* AR scan / recognition */
+.ar-scan-status{font-size:10px;font-weight:600;color:var(--mu-bark);min-height:16px;margin-bottom:6px}
+.ar-scan-status.ok{color:#166534}
+.ar-scan-status.err{color:#991b1b}
+.ar-scan-status.busy{color:var(--mu-blue)}
+.ar-marker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-height:120px;overflow-y:auto;margin-bottom:8px}
+.ar-marker{
+  font-size:16px;padding:6px 2px;border-radius:8px;border:2px solid rgba(26,60,110,.12);
+  background:var(--mu-bg);cursor:pointer;text-align:center;transition:all .14s;position:relative
+}
+.ar-marker:hover{border-color:var(--mu-gold)}
+.ar-marker.on{border-color:var(--mu-gold);box-shadow:0 0 0 2px rgba(200,148,26,.35);background:#fff8e6}
+.ar-marker.collected{opacity:.45;cursor:default}
+.ar-marker.collected::after{content:'✓';position:absolute;top:1px;left:3px;font-size:7px;color:#166534;font-weight:800}
+.ar-marker-lbl{display:block;font-size:5.5px;font-weight:700;color:var(--mu-dark);margin-top:2px;line-height:1.1}
+.ar-bonus-stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.ar-bonus-stat{flex:1;min-width:70px;background:var(--mu-bg);border-radius:8px;padding:6px 8px;text-align:center}
+.ar-bonus-stat b{display:block;font-size:15px;color:var(--mu-blue)}
+.ar-bonus-stat span{font-size:8px;font-weight:700;color:var(--mu-bark)}
+.ar-file-label{display:block;font-size:10px;font-weight:700;color:var(--mu-blue);margin:6px 0 4px}
+.ar-file-input{font-size:10px;width:100%}
+.ar-view.scanning .ar-vf{animation:scanPulse .8s ease-in-out infinite}
+@keyframes scanPulse{0%,100%{border-color:var(--mu-gold-light)}50%{border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.4)}}
+.ar-found-tag.match{animation:tagPop .4s ease}
+@keyframes tagPop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+/* bird → Ace conversion in viewfinder */
+#ar-convert{
+  position:absolute;inset:0;z-index:6;display:none;align-items:center;justify-content:center;
+  background:rgba(8,16,32,.82);pointer-events:none
+}
+#ar-convert.on{display:flex}
+.ar-convert-bird{font-size:56px;position:absolute;opacity:1;transform:scale(1) rotate(0deg);filter:blur(0)}
+.ar-convert-ace{
+  width:72px;aspect-ratio:.68;border-radius:10px;padding:8px 6px;text-align:center;
+  background:linear-gradient(155deg,#1a0a2e,#1a3c6e);border:2px solid var(--mu-gold);
+  box-shadow:0 8px 24px rgba(200,148,26,.45);opacity:0;transform:scale(.3) rotateY(90deg)
+}
+.ar-convert-ace-rank{font-size:28px;font-weight:900;line-height:1;color:#e8b84b}
+.ar-convert-ace-em{font-size:20px}
+#ar-convert.phase-bird .ar-convert-bird{animation:convertBirdOut .55s ease-in forwards}
+#ar-convert.phase-ace .ar-convert-bird{opacity:0}
+#ar-convert.phase-ace .ar-convert-ace{animation:convertAceIn .65s cubic-bezier(.34,1.3,.64,1) forwards}
+@keyframes convertBirdOut{
+  0%{opacity:1;transform:scale(1) rotate(0deg);filter:blur(0)}
+  100%{opacity:0;transform:scale(.2) rotate(25deg);filter:blur(6px)}
+}
+@keyframes convertAceIn{
+  0%{opacity:0;transform:scale(.2) rotateY(-90deg)}
+  100%{opacity:1;transform:scale(1) rotateY(0)}
+}
+.gpill-bonus{border-color:rgba(200,148,26,.45);background:linear-gradient(135deg,#fffef8,#fff8e6)}
+.gpill-extra{border-color:rgba(45,106,45,.35);background:linear-gradient(135deg,#f0fdf4,#fff)}
+
 /* WIN */
 #winov{display:none;position:fixed;inset:0;background:rgba(15,32,64,.9);z-index:999;align-items:center;justify-content:center}
 #winov.on{display:flex}
@@ -243,6 +297,8 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
     <div class="gpill">האוסף שלך: <b id="ps">0</b> סטים</div>
     <div class="gturn gt-y" id="tbadge">התור שלך!</div>
     <div class="gpill">חבילה: <b id="dk">0</b> קלפים</div>
+    <div class="gpill gpill-bonus">בונוס AR: <b id="bonus-pts">0</b> נק'</div>
+    <div class="gpill gpill-extra">תורות נוספים: <b id="extra-turns">0</b></div>
   </div>
 
   <div id="stmsg">ברוך הבא! בחר אזור, ציפור, ולחץ "בקש קלף!"</div>
@@ -373,18 +429,25 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
         <div class="ar-tag">📍 אזור הגליל</div>
         <div class="ar-xp">+50 XP</div>
       </div>
-      <div class="ar-view">
+      <div class="ar-view" id="ar-view">
         <div class="ar-guide-bg" id="ar-guide-bg" aria-hidden="true"></div>
         <div class="ar-guide-label">מדריך AR · צלם-ינשוף</div>
-        <div class="ar-vf ar-vf-guide">
+        <div class="ar-vf ar-vf-guide" id="ar-vf">
           <div class="arc tl"></div><div class="arc tr"></div>
           <div class="arc bl"></div><div class="arc br"></div>
           <div class="ar-guide-wrap" id="ar-guide-vf"></div>
         </div>
-        <div class="ar-found-tag">ינשוף חום זוהה!</div>
+        <div id="ar-convert" aria-hidden="true">
+          <div class="ar-convert-bird" id="ar-convert-bird"></div>
+          <div class="ar-convert-ace">
+            <div class="ar-convert-ace-rank">A</div>
+            <div class="ar-convert-ace-em" id="ar-convert-em">🦉</div>
+          </div>
+        </div>
+        <div class="ar-found-tag" id="ar-found-tag">כוון למדבקת ציפור ולחץ צילום</div>
       </div>
       <div class="ar-bot">
-        <div class="ar-shutter" id="ar-shutter" title="צלם · לחיצה כפולה לקלף בונוס">📸</div>
+        <div class="ar-shutter" id="ar-shutter" title="סרוק תמונת תצוגה במוזיאון">📸</div>
         <div style="font-size:9px;color:rgba(255,255,255,.45);text-align:center;margin-bottom:4px">אוסף גליל (2/4)</div>
         <div class="ar-prow">
           <div class="ar-ps found">🦉</div><div class="ar-ps found">🦅</div>
@@ -396,12 +459,19 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
 
     <div class="ar-panel">
       <div class="ar-card" id="ar-bonus-card-sec">
-        <div class="ar-ct">קלפי בונוס AR</div>
-        <p style="font-size:10px;color:var(--mu-bark);line-height:1.5;margin-bottom:8px">קלפים נדירים נפתחים רק בסיור AR — עם אנימציית כניסה ייחודית.</p>
-        <button type="button" class="ar-bonus-scan" id="ar-bonus-scan" onclick="triggerAceBonusCard()">
-          🃏 סרוק מדבקת Ace — קלף בונוס
-        </button>
-        <div class="ar-bonus-badge">★ 15 נקודות · ערך גבוה</div>
+        <div class="ar-ct">זיהוי תמונה · קלפי בונוס Ace</div>
+        <p style="font-size:10px;color:var(--mu-bark);line-height:1.5;margin-bottom:8px">סריקה בודקת התאמה לציפור מהאוסף. בהצלחה — התמונה הופכת לקלף Ace (+15 נק'). 2 קלפים = תור נוסף במשחק.</p>
+        <div class="ar-bonus-stats">
+          <div class="ar-bonus-stat"><b id="ar-card-count">0</b><span>קלפי Ace</span></div>
+          <div class="ar-bonus-stat"><b id="ar-pts-total">0</b><span>נקודות</span></div>
+          <div class="ar-bonus-stat"><b id="ar-extra-earned">0</b><span>תורות שנצברו</span></div>
+        </div>
+        <div class="ar-scan-status" id="ar-scan-status">בחר מדבקת תצוגה או העלה תמונה, ואז לחץ 📸</div>
+        <div class="ar-marker-grid" id="ar-marker-grid"></div>
+        <label class="ar-file-label" for="ar-file-input">📷 או העלה תמונה מהמוזיאון</label>
+        <input type="file" id="ar-file-input-panel" class="ar-file-input" accept="image/*" capture="environment">
+        <div class="ar-bonus-badge">★ 15 נקודות לקלף · 30 נקודות = +1 תור</div>
+        <div id="ar-bonus-collected" style="margin-top:8px;font-size:9px;color:var(--mu-bark);line-height:1.4"></div>
       </div>
       <div class="ar-card">
         <div class="ar-ct">ציפורי הגליל — מה לחפש</div>
@@ -436,9 +506,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
       <div class="ace-shimmer"></div>
       <div class="ace-tag">AR Collectible · Bonus</div>
       <div class="ace-rank">A</div>
-      <div class="ace-suit">🦉</div>
-      <div class="ace-title" id="ace-title">Ace — ינשוף הגליל</div>
-      <div class="ace-sub">קלף בונוס נדיר מהאפליקציה · סגנון Ace יוקרתי</div>
+      <div class="ace-suit" id="ace-suit">🦉</div>
+      <div class="ace-title" id="ace-title">Ace — ינשוף חום</div>
+      <div class="ace-sub" id="ace-sub">זוהה בסריקת AR · הומר לקלף Ace</div>
       <div class="ace-pts"><span>+</span>15 <span>נקודות</span></div>
       <div class="ace-ar-only">נאסף בסיור AR במוזיאון</div>
       <div class="ace-actions">
@@ -520,8 +590,11 @@ const SCIENTISTS=[
 
 /* ── GAME STATE ── */
 let pH=[],cH=[],deck=[],pS=[],cS=[],selF=null,selC=null,myTurn=true,busy=false;
+let extraTurns=0;
 let curSci=SCIENTISTS[0];
 const getF=id=>RFAM.find(f=>f.id===id);
+const BONUS_PTS_PER_CARD=15;
+const BONUS_PTS_PER_EXTRA_TURN=30;
 
 function buildAreas(){
   const el=document.getElementById('areas');el.innerHTML='';
@@ -594,8 +667,13 @@ function render(){
   document.getElementById('cs').textContent=cS.length;
   document.getElementById('cc').textContent=cH.length;
   document.getElementById('dk').textContent=deck.length;
+  const bp=document.getElementById('bonus-pts');
+  const et=document.getElementById('extra-turns');
+  if(bp)bp.textContent=arBonusState.totalPts;
+  if(et)et.textContent=extraTurns;
   const tb=document.getElementById('tbadge');
-  tb.textContent=myTurn?'התור שלך!':curSci.name+' חושבת...';
+  const turnLbl=myTurn?(extraTurns>0?'התור שלך! (+'+extraTurns+' בונוס)'):'התור שלך!'):curSci.name+' חושבת...';
+  tb.textContent=turnLbl;
   tb.className='gturn '+(myTurn?'gt-y':'gt-s');
   const sc=document.getElementById('sci-cards');sc.innerHTML='';
   cH.forEach(function(){const d=document.createElement('div');d.className='sci-back';sc.appendChild(d);});
@@ -642,8 +720,14 @@ function doAsk(){
     if(cH.length===0&&deck.length>0){cH.push(deck.splice(0,1)[0]);chk(cH,cS);}
     selF=null;selC=null;busy=false;render();
   } else {
-    setSt('✗ '+sn+' אומרת: "לך לדוג!" — אין '+cn+'. שלפת קלף. תור '+sn+'.','b');
     if(deck.length>0){pH.push(deck.splice(0,1)[0]);chk(pH,pS);}
+    if(extraTurns>0){
+      extraTurns--;
+      setSt('✗ אין '+cn+' — אבל יש לך תור בונוס AR! (נשארו '+extraTurns+') בקש שוב.','g');
+      selF=null;selC=null;busy=false;render();
+      return;
+    }
+    setSt('✗ '+sn+' אומרת: "לך לדוג!" — אין '+cn+'. שלפת קלף. תור '+sn+'.','b');
     selF=null;selC=null;myTurn=false;render();setTimeout(sciTurn,1800);
   }
 }
@@ -825,11 +909,140 @@ function mountArGuide(){
   if(bg)bg.innerHTML=drawArGuide('bg');
 }
 
-/* ── AR Ace bonus card (15 pts) ── */
-let aceCardOwned=false;
+/* ── AR image tracking & bonus cards ── */
+const AR_MARKERS=[];
+RFAM.forEach(function(f){
+  f.birds.forEach(function(b){
+    const slug=(f.id+'-'+b.he).replace(/\s+/g,'-');
+    AR_MARKERS.push({
+      markerId:'smnh-'+slug,
+      slug:slug,
+      fam:f.id,
+      region:f.name,
+      he:b.he,
+      en:b.en,
+      em:b.em,
+      col:f.col
+    });
+  });
+});
 
-function triggerAceBonusCard(){
-  if(aceCardOwned)return;
+const arBonusState={cards:[],totalPts:0,extraTurnsEarned:0};
+let arSelectedMarker=null;
+let arScanBusy=false;
+let pendingAceBird=null;
+
+function buildArMarkerGrid(){
+  const grid=document.getElementById('ar-marker-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  AR_MARKERS.forEach(function(m){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='ar-marker'+(arSelectedMarker===m.markerId?' on':'')+(arBonusState.cards.includes(m.markerId)?' collected':'');
+    btn.dataset.marker=m.markerId;
+    btn.title=m.he+' · '+m.region;
+    btn.innerHTML=m.em+'<span class="ar-marker-lbl">'+m.he.split(' ')[0]+'</span>';
+    if(!arBonusState.cards.includes(m.markerId)){
+      btn.onclick=function(){selectArMarker(m.markerId);};
+    }
+    grid.appendChild(btn);
+  });
+}
+
+function selectArMarker(markerId){
+  arSelectedMarker=markerId;
+  buildArMarkerGrid();
+  const m=AR_MARKERS.find(x=>x.markerId===markerId);
+  setArScanStatus('מכוון ל: '+m.he+' — לחץ 📸 לסריקה','');
+  const tag=document.getElementById('ar-found-tag');
+  if(tag){tag.textContent='ממתין לסריקה: '+m.em+' '+m.he;tag.classList.remove('match');}
+}
+
+function setArScanStatus(msg,kind){
+  const el=document.getElementById('ar-scan-status');
+  if(!el)return;
+  el.textContent=msg;
+  el.className='ar-scan-status'+(kind?' '+kind:'');
+}
+
+function recognizeArMarker(markerId){
+  if(!markerId)return null;
+  return AR_MARKERS.find(m=>m.markerId===markerId)||null;
+}
+
+function inferMarkerFromFileName(name){
+  const lower=(name||'').toLowerCase().replace(/\.[^.]+$/,'');
+  let hit=AR_MARKERS.find(m=>lower.includes(m.slug)||lower.includes(m.markerId));
+  if(hit)return hit.markerId;
+  const parts=lower.split(/[-_\s]+/);
+  hit=AR_MARKERS.find(m=>{
+    const tokens=m.slug.split('-');
+    return tokens.every(t=>parts.includes(t)||lower.includes(t));
+  });
+  return hit?hit.markerId:null;
+}
+
+function resolveScanMarker(fileName){
+  if(arSelectedMarker)return arSelectedMarker;
+  if(fileName)return inferMarkerFromFileName(fileName);
+  return null;
+}
+
+function matchMuseumBird(markerId){
+  const bird=recognizeArMarker(markerId);
+  if(!bird)return {ok:false,reason:'לא נמצאה התאמה לאוסף המוזיאון.'};
+  if(arBonusState.cards.includes(bird.markerId))return {ok:false,reason:'כבר אספת קלף Ace ל'+bird.he+'.'};
+  return {ok:true,bird:bird};
+}
+
+function updateArBonusUI(){
+  document.getElementById('ar-card-count').textContent=arBonusState.cards.length;
+  document.getElementById('ar-pts-total').textContent=arBonusState.totalPts;
+  document.getElementById('ar-extra-earned').textContent=arBonusState.extraTurnsEarned;
+  const xp=document.querySelector('.ar-xp');
+  if(xp)xp.textContent='+'+arBonusState.totalPts+' נק\' בונוס';
+  const list=document.getElementById('ar-bonus-collected');
+  if(list){
+    if(!arBonusState.cards.length)list.textContent='';
+    else{
+      const names=arBonusState.cards.map(id=>{
+        const m=AR_MARKERS.find(x=>x.markerId===id);
+        return m?m.em+' '+m.he:'';
+      }).filter(Boolean);
+      list.textContent='נאספו: '+names.join(' · ');
+    }
+  }
+  buildArMarkerGrid();
+  render();
+}
+
+function playBirdToAceConversion(bird){
+  return new Promise(function(resolve){
+    const layer=document.getElementById('ar-convert');
+    const birdEl=document.getElementById('ar-convert-bird');
+    const emEl=document.getElementById('ar-convert-em');
+    if(!layer||!birdEl){resolve();return;}
+    birdEl.textContent=bird.em;
+    if(emEl)emEl.textContent=bird.em;
+    layer.className='on phase-bird';
+    layer.setAttribute('aria-hidden','false');
+    setTimeout(function(){
+      layer.className='on phase-ace';
+      setTimeout(function(){
+        layer.className='';
+        layer.setAttribute('aria-hidden','true');
+        resolve();
+      },700);
+    },580);
+  });
+}
+
+function showAceOverlayForBird(bird){
+  pendingAceBird=bird;
+  document.getElementById('ace-title').textContent='Ace — '+bird.he;
+  document.getElementById('ace-suit').textContent=bird.em;
+  document.getElementById('ace-sub').textContent='זוהה בסריקת AR · '+bird.region+' · הומר מקלף תצוגה';
   const ov=document.getElementById('ace-overlay');
   const burst=document.getElementById('ace-burst');
   if(!ov)return;
@@ -841,33 +1054,78 @@ function triggerAceBonusCard(){
 
 function closeAceOverlay(){
   document.getElementById('ace-overlay')?.classList.remove('on');
+  pendingAceBird=null;
+}
+
+function grantExtraTurnFromBonus(){
+  extraTurns++;
+  arBonusState.extraTurnsEarned++;
+  setSt('🃏 30 נקודות בונוס AR! קיבלת תור נוסף במשחק (+1). סה"כ תורות בונוס: '+extraTurns,'g');
 }
 
 function collectAceCard(){
-  aceCardOwned=true;
-  const sec=document.getElementById('ar-bonus-card-sec');
-  const btn=document.getElementById('ar-bonus-scan');
-  if(sec)sec.classList.add('ace-owned');
-  if(btn){
-    btn.disabled=true;
-    btn.textContent='✓ Ace נאסף — +15 נקודות';
-  }
-  const xp=document.querySelector('.ar-xp');
-  if(xp)xp.textContent='+65 XP · Ace +15';
+  if(!pendingAceBird)return;
+  const bird=pendingAceBird;
+  arBonusState.cards.push(bird.markerId);
+  arBonusState.totalPts+=BONUS_PTS_PER_CARD;
+  const pairsBefore=Math.floor((arBonusState.cards.length-1)*BONUS_PTS_PER_CARD/BONUS_PTS_PER_EXTRA_TURN);
+  const pairsAfter=Math.floor(arBonusState.cards.length*BONUS_PTS_PER_CARD/BONUS_PTS_PER_EXTRA_TURN);
+  if(pairsAfter>pairsBefore)grantExtraTurnFromBonus();
+  else setSt('🃏 קלף Ace נאסף: '+bird.em+' '+bird.he+' (+15 נק\'). סה"כ: '+arBonusState.totalPts+' נק\'','g');
+  updateArBonusUI();
+  const tag=document.getElementById('ar-found-tag');
+  if(tag){tag.textContent=bird.em+' '+bird.he+' → קלף Ace!';tag.classList.add('match');}
+  setArScanStatus('✓ '+bird.he+' נוסף לאוסף · +15 נקודות','ok');
+  arSelectedMarker=null;
   closeAceOverlay();
+}
+
+async function runArScan(fileName){
+  if(arScanBusy)return;
+  arScanBusy=true;
+  const view=document.getElementById('ar-view');
+  view?.classList.add('scanning');
+  setArScanStatus('מזהה תמונה מול אוסף המוזיאון…','busy');
+  await new Promise(r=>setTimeout(r,650));
+  const markerId=resolveScanMarker(fileName);
+  const result=matchMuseumBird(markerId);
+  view?.classList.remove('scanning');
+  if(!result.ok){
+    setArScanStatus(result.reason,'err');
+    const tag=document.getElementById('ar-found-tag');
+    if(tag){tag.textContent='לא זוהתה התאמה';tag.classList.remove('match');}
+    arScanBusy=false;
+    return;
+  }
+  const bird=result.bird;
+  setArScanStatus('✓ התאמה! '+bird.he+' — ממיר לקלף Ace…','ok');
+  const tag=document.getElementById('ar-found-tag');
+  if(tag){tag.textContent='זוהה: '+bird.em+' '+bird.he;tag.classList.add('match');}
+  await playBirdToAceConversion(bird);
+  showAceOverlayForBird(bird);
+  arScanBusy=false;
+}
+
+function onArFileSelected(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  if(!arSelectedMarker){
+    const inferred=inferMarkerFromFileName(file.name);
+    if(inferred)arSelectedMarker=inferred;
+  }
+  runArScan(file.name);
+  input.value='';
 }
 
 function initArInteractions(){
   mountArGuide();
+  buildArMarkerGrid();
+  updateArBonusUI();
+  if(!arSelectedMarker&&AR_MARKERS[0])selectArMarker(AR_MARKERS.find(m=>m.he==='ינשוף חום')?.markerId||AR_MARKERS[0].markerId);
   const shutter=document.getElementById('ar-shutter');
-  if(shutter){
-    let lastTap=0;
-    shutter.addEventListener('click',function(){
-      const now=Date.now();
-      if(now-lastTap<400)triggerAceBonusCard();
-      lastTap=now;
-    });
-  }
+  if(shutter)shutter.addEventListener('click',function(){runArScan(null);});
+  const fileInp=document.getElementById('ar-file-input-panel');
+  if(fileInp)fileInp.addEventListener('change',function(){onArFileSelected(fileInp);});
   document.getElementById('ace-overlay')?.addEventListener('click',function(e){
     if(e.target===e.currentTarget)closeAceOverlay();
   });
