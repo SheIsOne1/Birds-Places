@@ -1,0 +1,739 @@
+
+<style>
+:root{
+  --mu-blue:#1a3c6e;--mu-blue-light:#2a5fa8;--mu-gold:#c8941a;--mu-gold-light:#e8b84b;
+  --mu-green:#2d6a2d;--mu-green-light:#4a9e4a;--mu-sand:#f5efe0;--mu-bark:#7a5c2e;
+  --mu-bg:#f0ead8;--mu-dark:#0f2040;--mu-text:#1a1a1a;
+  --r-hula:#1a5fa8;--r-galil:#2d6a2d;--r-negev:#c8941a;
+  --r-coast:#0e7490;--r-eilat:#7c3aed;--r-carml:#c2410c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(--mu-text);direction:rtl}
+#app{display:flex;flex-direction:column;min-height:600px}
+
+/* ── NAV ── */
+#nav{
+  background:var(--mu-dark);padding:0 18px;height:50px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0
+}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo-mark{width:34px;height:34px;border-radius:50%;background:var(--mu-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-logo-mark svg{width:22px;height:22px}
+.nav-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:.3px}
+.nav-title span{color:var(--mu-gold-light)}
+.nav-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px}
+.nav-tabs{display:flex;gap:2px}
+.ntab{font-size:11px;font-weight:600;color:rgba(255,255,255,.6);padding:6px 12px;border-radius:5px;cursor:pointer;border:none;background:transparent;font-family:inherit;transition:all .15s}
+.ntab:hover{background:rgba(255,255,255,.08);color:#fff}
+.ntab.on{background:var(--mu-gold);color:var(--mu-dark)}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1}
+.screen.on{display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════
+   GAME SCREEN
+══════════════════════════════════════ */
+#gs{background:var(--mu-bg);flex:1;display:flex;flex-direction:column;padding:12px 14px;gap:10px}
+
+/* score bar */
+.gbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gpill{background:#fff;border:1.5px solid rgba(26,60,110,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--mu-blue);display:flex;align-items:center;gap:6px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.gpill b{color:var(--mu-dark);font-size:14px}
+.gturn{border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700}
+.gt-y{background:var(--mu-green);color:#fff;border:1.5px solid var(--mu-green-light)}
+.gt-c{background:#7f1d1d;color:#fff;border:1.5px solid #dc2626}
+
+/* status */
+#stmsg{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--mu-blue);font-weight:600;min-height:46px;display:flex;align-items:center;line-height:1.4;transition:border-color .3s,color .3s}
+#stmsg.g{border-color:var(--mu-green-light);color:var(--mu-green)}
+#stmsg.b{border-color:#dc2626;color:#991b1b}
+
+/* ── AREAS GRID ── */
+#areas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.area{
+  background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;
+  overflow:hidden;cursor:default;transition:border-color .2s
+}
+.area-head{height:64px;position:relative;display:flex;align-items:flex-end;padding:0 8px 6px;overflow:hidden}
+.area-bg{position:absolute;inset:0}
+.area-name{position:relative;z-index:1;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);line-height:1.2}
+.area-slots{display:flex;gap:4px;padding:7px 6px;flex-wrap:wrap;min-height:54px;align-items:flex-start}
+.slot{width:44px;height:56px;border-radius:8px;border:2px dashed rgba(0,0,0,.12);background:rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(0,0,0,.25);transition:all .3s}
+.slot.filled{border-style:solid;border-color:rgba(0,0,0,.1);background:#fff;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.slot-band{height:10px;flex-shrink:0}
+.slot-art{flex:1;display:flex;align-items:center;justify-content:center}
+.slot-name{font-size:6px;font-weight:700;color:#333;padding:1px 2px;text-align:center;line-height:1.1}
+
+/* ── ASK SECTION ── */
+#ask-sec{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:12px;padding:10px 12px}
+.ask-title{font-size:12px;font-weight:700;color:var(--mu-blue);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ask-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.ask-lbl{font-size:11px;font-weight:700;color:var(--mu-bark);flex-shrink:0;min-width:50px}
+.fbtns,.cbtns{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+
+/* region buttons with illustrated icons */
+.fbtn{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;font-family:inherit;
+  padding:5px 10px;border-radius:20px;cursor:pointer;
+  border:2px solid transparent;transition:all .15s;
+  background:var(--mu-bg)
+}
+.fbtn:hover{filter:brightness(.92)}
+.fbtn.act{border-color:var(--mu-dark);box-shadow:0 0 0 3px var(--mu-gold)}
+.fbtn:disabled{opacity:.35;cursor:not-allowed}
+.fbtn-icon{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+.cbtn{font-size:12px;font-weight:600;font-family:inherit;padding:5px 12px;border-radius:8px;border:2px solid rgba(26,60,110,.2);background:#fff;color:var(--mu-blue);cursor:pointer;transition:all .15s}
+.cbtn:hover{background:var(--mu-blue);color:#fff}
+.cbtn.act{background:var(--mu-blue);color:#fff;border-color:var(--mu-blue)}
+.cbtn:disabled{opacity:.35;cursor:not-allowed}
+
+/* THE BIG ASK BUTTON */
+.ago{
+  font-family:inherit;font-size:15px;font-weight:700;
+  padding:10px 28px;border-radius:10px;border:none;
+  background:var(--mu-gold);color:var(--mu-dark);
+  cursor:pointer;box-shadow:0 3px 0 var(--mu-bark);
+  transition:all .12s;flex-shrink:0;letter-spacing:.3px
+}
+.ago:disabled{background:#ccc;color:#888;box-shadow:0 3px 0 #aaa;cursor:not-allowed}
+.ago:not(:disabled):hover{background:var(--mu-gold-light)}
+.ago:not(:disabled):active{transform:translateY(2px);box-shadow:0 1px 0 var(--mu-bark)}
+
+/* ── CPU zone ── */
+#cpu-zone{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:10px;padding:7px 10px}
+.cz-head{font-size:10px;font-weight:700;color:rgba(26,60,110,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+#cpu-h{display:flex;flex-wrap:wrap;gap:4px;min-height:40px}
+.cback{width:30px;height:42px;border-radius:5px;background:var(--mu-dark);border:1.5px solid rgba(255,255,255,.2);background-image:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,.05) 4px,rgba(255,255,255,.05) 5px)}
+
+/* ══════════════════════════════════════
+   MAP SCREEN
+══════════════════════════════════════ */
+#ms{background:var(--mu-bg);flex:1;display:flex;flex-direction:column;padding:14px}
+.map-title{font-size:18px;font-weight:700;color:var(--mu-blue);margin-bottom:4px}
+.map-sub{font-size:12px;color:var(--mu-bark);margin-bottom:12px}
+.map-wrap{position:relative;background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:14px;overflow:hidden;flex:1;min-height:320px}
+.israel-svg{width:100%;height:100%;position:absolute;inset:0}
+.map-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ml-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--mu-dark)}
+.ml-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+
+/* ══════════════════════════════════════
+   AR SCREEN
+══════════════════════════════════════ */
+#ars{background:var(--mu-bg);flex:1;display:flex;flex-direction:column;padding:14px;gap:10px}
+.ar-title{font-size:18px;font-weight:700;color:var(--mu-blue);margin-bottom:2px}
+.ar-sub{font-size:12px;color:var(--mu-bark);margin-bottom:6px}
+.ar-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1}
+.ar-camera{background:var(--mu-dark);border-radius:14px;border:3px solid var(--mu-gold);position:relative;overflow:hidden;min-height:260px;display:flex;flex-direction:column}
+.ar-cam-top{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;z-index:2;position:relative}
+.ar-region-tag{background:rgba(200,148,26,.85);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff}
+.ar-xp{background:rgba(42,95,168,.85);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff}
+.ar-viewfinder{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.ar-vf-frame{width:100px;height:100px;border:2px solid var(--mu-gold-light);border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center}
+.ar-vf-corner{position:absolute;width:14px;height:14px;border-color:var(--mu-gold-light);border-style:solid}
+.ar-vf-corner.tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:3px 0 0 0}
+.ar-vf-corner.tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 3px 0 0}
+.ar-vf-corner.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 3px}
+.ar-vf-corner.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 3px 0}
+.ar-cam-bottom{padding:8px 10px;background:rgba(0,0,0,.6);display:flex;flex-direction:column;gap:5px;z-index:2}
+.ar-shutter{width:40px;height:40px;border-radius:50%;background:#fff;border:3px solid #ccc;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px}
+.ar-progress-row{display:flex;gap:4px;justify-content:center}
+.ar-pslot{width:28px;height:36px;border-radius:5px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:14px}
+.ar-pslot.found{background:rgba(200,148,26,.25);border-color:var(--mu-gold)}
+.ar-panel{display:flex;flex-direction:column;gap:8px}
+.ar-info-card{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;padding:10px 12px}
+.ar-info-title{font-size:12px;font-weight:700;color:var(--mu-blue);margin-bottom:6px}
+.ar-bird-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.ar-bird-row:last-child{border-bottom:none}
+.ar-bird-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ar-bird-name{font-size:11px;font-weight:700;color:var(--mu-dark);flex:1}
+.ar-bird-status{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+.ar-found{background:#dcfce7;color:#166534}
+.ar-missing{background:#fef3c7;color:#92400e}
+.ar-hint-card{background:var(--mu-blue);border-radius:12px;padding:10px 12px}
+.ar-hint-title{font-size:11px;font-weight:700;color:var(--mu-gold-light);margin-bottom:4px}
+.ar-hint-text{font-size:11px;color:rgba(255,255,255,.8);line-height:1.5}
+.ar-coll-card{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;padding:10px 12px;flex:1}
+.ar-coll-title{font-size:11px;font-weight:700;color:var(--mu-bark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.ar-region-row{margin-bottom:5px}
+.ar-rr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.ar-rr-name{font-size:11px;font-weight:700;color:var(--mu-dark)}
+.ar-rr-count{font-size:10px;color:rgba(0,0,0,.45)}
+.ar-rr-bar{height:6px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden}
+.ar-rr-fill{height:100%;border-radius:3px;transition:width .3s}
+
+/* ── WIN ── */
+#winov{display:none;position:fixed;inset:0;background:rgba(15,32,64,.88);z-index:999;align-items:center;justify-content:center}
+#winov.on{display:flex}
+#winbox{background:var(--mu-sand);border:3px solid var(--mu-gold);border-radius:20px;padding:36px 44px;text-align:center;max-width:360px;width:90%}
+#wico{font-size:72px;margin-bottom:10px}
+#wtit{font-size:28px;font-weight:700;color:var(--mu-blue);margin-bottom:6px}
+#wsc{font-size:15px;color:var(--mu-bark);margin-bottom:18px;font-weight:600}
+#wsets{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px}
+.wst{font-size:12px;font-weight:700;padding:4px 12px;border-radius:6px;color:#fff}
+#wagain{font-family:inherit;font-size:15px;font-weight:700;padding:12px 36px;border-radius:10px;border:none;background:var(--mu-gold);color:var(--mu-dark);cursor:pointer;box-shadow:0 3px 0 var(--mu-bark)}
+#wagain:hover{background:var(--mu-gold-light)}
+</style>
+
+<div id="app">
+<div id="nav">
+  <div class="nav-brand">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="11" cy="14" rx="7" ry="5" fill="#0f2040"/>
+        <circle cx="14" cy="9" r="4" fill="#0f2040"/>
+        <circle cx="15" cy="8.5" r=".9" fill="#f5efe0"/>
+        <path d="M16 10 Q19 9 20 11" stroke="#f5efe0" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M7 13 Q4 15 3 14" stroke="#0f2040" stroke-width="1" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <div>
+      <div class="nav-title">Bird <span>Kwartet</span></div>
+      <div class="nav-sub">מוזיאון הטבע ע"ש שטיינהרדט · אוניברסיטת ת"א</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="showScreen('game')">משחק</button>
+    <button class="ntab" onclick="showScreen('map')">מפה</button>
+    <button class="ntab" onclick="showScreen('ar')">AR סיור</button>
+  </div>
+</div>
+
+<!-- ═══ GAME SCREEN ═══ -->
+<div id="game" class="screen on">
+<div id="gs">
+
+  <div class="gbar">
+    <div class="gpill">האוסף שלך: <b id="ps">0</b> סטים</div>
+    <div class="gturn gt-y" id="tbadge">התור שלך!</div>
+    <div class="gpill">CPU: <b id="cs">0</b> סטים &nbsp;|&nbsp; חבילה: <b id="dk">0</b></div>
+  </div>
+
+  <div id="stmsg">ברוך הבא! בחר אזור, בחר ציפור, ולחץ "בקש קלף!"</div>
+
+  <!-- AREAS -->
+  <div id="areas"></div>
+
+  <!-- ASK -->
+  <div id="ask-sec">
+    <div class="ask-title">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#1a3c6e" stroke-width="1.5"/><path d="M8 5v4M8 11v1" stroke="#1a3c6e" stroke-width="1.5" stroke-linecap="round"/></svg>
+      בקש קלף מה-CPU
+    </div>
+    <div class="ask-row">
+      <span class="ask-lbl">1. אזור:</span>
+      <div class="fbtns" id="fbtns"></div>
+    </div>
+    <div class="ask-row">
+      <span class="ask-lbl">2. ציפור:</span>
+      <div class="cbtns" id="cbtns"></div>
+    </div>
+    <div style="margin-top:6px;display:flex;justify-content:center">
+      <button class="ago" id="abtn" disabled onclick="doAsk()">בקש קלף! 🐦</button>
+    </div>
+  </div>
+
+  <!-- CPU -->
+  <div id="cpu-zone">
+    <div class="cz-head">
+      <span>יד המחשב</span>
+      <span id="cc-lbl" style="font-size:11px;color:var(--mu-bark)">0 קלפים</span>
+    </div>
+    <div id="cpu-h"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══ MAP SCREEN ═══ -->
+<div id="map" class="screen">
+<div id="ms">
+  <div class="map-title">מפת ציפורי ישראל</div>
+  <div class="map-sub">6 אזורים · 24 מינים · לחץ על אזור לפרטים</div>
+  <div class="map-wrap">
+    <svg class="israel-svg" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg">
+      <!-- background -->
+      <rect width="400" height="520" fill="#e8f4f8"/>
+      <!-- Mediterranean sea -->
+      <path d="M0 0 L120 0 L100 60 L90 120 L85 200 L80 280 L75 360 L70 420 L0 420Z" fill="#b3d9f0" opacity=".6"/>
+      <!-- Israel outline simplified -->
+      <path d="M120 30 L200 20 L240 40 L260 80 L250 130 L260 180 L250 230 L240 260 L260 300 L265 340 L250 380 L240 420 L200 460 L180 490 L160 510 L150 500 L140 480 L130 450 L120 420 L110 380 L100 340 L95 300 L100 260 L90 220 L85 180 L90 140 L95 100 L100 60 L110 30Z" fill="#f0ead8" stroke="#c8941a" stroke-width="1.5"/>
+      <!-- Jordan River hint -->
+      <path d="M200 80 Q210 120 205 160 Q200 200 210 240 Q215 280 200 320" fill="none" stroke="#b3d9f0" stroke-width="2" opacity=".7"/>
+
+      <!-- Region fills -->
+      <!-- Hula Valley -->
+      <ellipse cx="210" cy="90" rx="35" ry="28" fill="#1a5fa8" opacity=".22"/>
+      <!-- Galilee -->
+      <ellipse cx="175" cy="150" rx="45" ry="38" fill="#2d6a2d" opacity=".2"/>
+      <!-- Carmel/Sharon -->
+      <ellipse cx="130" cy="220" rx="30" ry="35" fill="#c2410c" opacity=".18"/>
+      <!-- Coast -->
+      <rect x="95" y="260" width="50" height="80" rx="8" fill="#0e7490" opacity=".18"/>
+      <!-- Negev -->
+      <ellipse cx="185" cy="380" rx="55" ry="60" fill="#c8941a" opacity=".2"/>
+      <!-- Eilat -->
+      <ellipse cx="195" cy="480" rx="28" ry="22" fill="#7c3aed" opacity=".22"/>
+
+      <!-- Region labels with icons -->
+      <text x="210" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#0f2040">עמק החולה</text>
+      <text x="210" y="88" text-anchor="middle" font-size="16">🦢</text>
+      <text x="175" y="138" text-anchor="middle" font-size="10" font-weight="700" fill="#0f2040">הגליל</text>
+      <text x="175" y="150" text-anchor="middle" font-size="16">🦉</text>
+      <text x="130" y="207" text-anchor="middle" font-size="9" font-weight="700" fill="#0f2040">הכרמל</text>
+      <text x="130" y="219" text-anchor="middle" font-size="14">🐦</text>
+      <text x="118" y="282" text-anchor="middle" font-size="9" font-weight="700" fill="#0f2040">החוף</text>
+      <text x="118" y="294" text-anchor="middle" font-size="14">🌊</text>
+      <text x="185" y="366" text-anchor="middle" font-size="10" font-weight="700" fill="#0f2040">הנגב</text>
+      <text x="185" y="378" text-anchor="middle" font-size="16">🦅</text>
+      <text x="195" y="468" text-anchor="middle" font-size="9" font-weight="700" fill="#0f2040">אילת</text>
+      <text x="195" y="480" text-anchor="middle" font-size="14">🦩</text>
+
+      <!-- compass rose -->
+      <g transform="translate(350,40)">
+        <circle r="16" fill="rgba(255,255,255,.7)" stroke="#c8941a" stroke-width="1"/>
+        <text text-anchor="middle" dy="-6" font-size="8" font-weight="700" fill="#0f2040">N</text>
+        <text text-anchor="middle" dy="11" font-size="8" font-weight="700" fill="#0f2040">S</text>
+        <text text-anchor="start" dx="5" dy="3" font-size="7" fill="#0f2040">E</text>
+        <text text-anchor="end" dx="-5" dy="3" font-size="7" fill="#0f2040">W</text>
+        <line x1="0" y1="-10" x2="0" y2="10" stroke="#c8941a" stroke-width="1.2"/>
+        <line x1="-10" y1="0" x2="10" y2="0" stroke="#c8941a" stroke-width="1.2"/>
+      </g>
+      <!-- scale bar -->
+      <g transform="translate(30,490)">
+        <rect width="60" height="3" rx="1" fill="#0f2040" opacity=".4"/>
+        <text x="0" y="-3" font-size="7" fill="#0f2040" opacity=".6">0</text>
+        <text x="55" y="-3" font-size="7" fill="#0f2040" opacity=".6">100km</text>
+      </g>
+      <!-- Museum label -->
+      <text x="200" y="512" text-anchor="middle" font-size="8" fill="#0f2040" opacity=".5">מוזיאון הטבע ע"ש שטיינהרדט</text>
+    </svg>
+  </div>
+  <div class="map-legend">
+    <div class="ml-item"><div class="ml-dot" style="background:#1a5fa8"></div>עמק החולה</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#2d6a2d"></div>הגליל</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#c2410c"></div>הכרמל</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#0e7490"></div>החוף</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#c8941a"></div>הנגב</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#7c3aed"></div>אילת</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ AR SCREEN ═══ -->
+<div id="ar" class="screen">
+<div id="ars">
+  <div class="ar-title">סיור AR — מוזיאון הטבע</div>
+  <div class="ar-sub">כוון את המצלמה לציפורים בתחנות הסיור לאיסוף לאוסף</div>
+  <div class="ar-layout">
+    <!-- camera -->
+    <div class="ar-camera">
+      <div class="ar-cam-top">
+        <div class="ar-region-tag">📍 אזור הגליל</div>
+        <div class="ar-xp">+50 XP</div>
+      </div>
+      <div class="ar-viewfinder">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:60px;opacity:.4">🦉</div>
+        <div class="ar-vf-frame">
+          <div class="ar-vf-corner tl"></div>
+          <div class="ar-vf-corner tr"></div>
+          <div class="ar-vf-corner bl"></div>
+          <div class="ar-vf-corner br"></div>
+          <div style="font-size:32px;animation:pulse2 1.5s infinite alternate">🦉</div>
+        </div>
+        <div style="position:absolute;bottom:18px;background:rgba(200,148,26,.9);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:#0f2040">ינשוף חום זוהה!</div>
+      </div>
+      <div class="ar-cam-bottom">
+        <div class="ar-shutter">📸</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);text-align:center">אוסף גליל (2/4)</div>
+        <div class="ar-progress-row">
+          <div class="ar-pslot found">🦉</div>
+          <div class="ar-pslot found">🦅</div>
+          <div class="ar-pslot">?</div>
+          <div class="ar-pslot">?</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- side panel -->
+    <div class="ar-panel">
+      <div class="ar-info-card">
+        <div class="ar-info-title">ציפורי הגליל — מה לחפש</div>
+        <div class="ar-bird-row">
+          <div class="ar-bird-icon" style="background:#f3f4f6">🦉</div>
+          <div class="ar-bird-name">ינשוף חום</div>
+          <div class="ar-bird-status ar-found">נמצא ✓</div>
+        </div>
+        <div class="ar-bird-row">
+          <div class="ar-bird-icon" style="background:#f3f4f6">🦅</div>
+          <div class="ar-bird-name">עיט</div>
+          <div class="ar-bird-status ar-found">נמצא ✓</div>
+        </div>
+        <div class="ar-bird-row">
+          <div class="ar-bird-icon" style="background:#f3f4f6">🐦</div>
+          <div class="ar-bird-name">נקר ירוק</div>
+          <div class="ar-bird-status ar-missing">חסר</div>
+        </div>
+        <div class="ar-bird-row">
+          <div class="ar-bird-icon" style="background:#f3f4f6">🐤</div>
+          <div class="ar-bird-name">שחרור</div>
+          <div class="ar-bird-status ar-missing">חסר</div>
+        </div>
+      </div>
+      <div class="ar-hint-card">
+        <div class="ar-hint-title">💡 טיפ לחיפוש</div>
+        <div class="ar-hint-text">הנקר הירוק נמצא ליד עצי האורן בקומה 2 — תחנה B4. חפש את הצבע הירוק הבוהק!</div>
+      </div>
+      <div class="ar-coll-card">
+        <div class="ar-coll-title">התקדמות כוללת</div>
+        <div class="ar-region-row">
+          <div class="ar-rr-top"><span class="ar-rr-name">הגליל</span><span class="ar-rr-count">2/4</span></div>
+          <div class="ar-rr-bar"><div class="ar-rr-fill" style="width:50%;background:#2d6a2d"></div></div>
+        </div>
+        <div class="ar-region-row">
+          <div class="ar-rr-top"><span class="ar-rr-name">עמק החולה</span><span class="ar-rr-count">4/4 ✓</span></div>
+          <div class="ar-rr-bar"><div class="ar-rr-fill" style="width:100%;background:#1a5fa8"></div></div>
+        </div>
+        <div class="ar-region-row">
+          <div class="ar-rr-top"><span class="ar-rr-name">הנגב</span><span class="ar-rr-count">1/4</span></div>
+          <div class="ar-rr-bar"><div class="ar-rr-fill" style="width:25%;background:#c8941a"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- WIN -->
+<div id="winov">
+  <div id="winbox">
+    <div id="wico"></div>
+    <div id="wtit"></div>
+    <div id="wsc"></div>
+    <div id="wsets"></div>
+    <button id="wagain" onclick="startGame()">שחק שוב!</button>
+  </div>
+</div>
+</div>
+
+<style>
+@keyframes pulse2{from{transform:scale(.95)}to{transform:scale(1.05)}}
+</style>
+
+<script>
+const RFAM=[
+  {id:'hula', name:'עמק החולה', col:'#1a5fa8', bg:'#dbeafe',
+   birds:[{he:'עגור אפור',en:'Crane'},{he:'דיה לבנה',en:'Pelican'},{he:'שלמונית',en:'Kingfisher'},{he:'קורמורן',en:'Cormorant'}],
+   artFn:drawHula},
+  {id:'galil',name:'הגליל',     col:'#2d6a2d', bg:'#dcfce7',
+   birds:[{he:'ינשוף חום',en:'Owl'},{he:'עיט',en:'Eagle'},{he:'נקר ירוק',en:'Woodpecker'},{he:'שחרור',en:'Blackbird'}],
+   artFn:drawGalil},
+  {id:'negev',name:'הנגב',      col:'#c8941a', bg:'#fef3c7',
+   birds:[{he:'שקנאי',en:'Vulture'},{he:'ינשוף מדבר',en:'Desert Owl'},{he:'שריקן',en:'Finch'},{he:'חנק',en:'Wheatear'}],
+   artFn:drawNegev},
+  {id:'coast',name:'החוף',      col:'#0e7490', bg:'#cffafe',
+   birds:[{he:'שחף',en:'Gull'},{he:'שחרורית',en:'Tern'},{he:'מדמורה',en:'Plover'},{he:'חסידה',en:'Stork'}],
+   artFn:drawCoast},
+  {id:'eilat',name:'אילת',      col:'#7c3aed', bg:'#ede9fe',
+   birds:[{he:'פלמינגו',en:'Flamingo'},{he:'שלוי',en:'Falcon'},{he:'עיט דיג',en:'Osprey'},{he:'חסידון',en:'Egret'}],
+   artFn:drawEilat},
+  {id:'carml',name:'הכרמל',     col:'#c2410c', bg:'#ffedd5',
+   birds:[{he:'בולבול',en:'Bulbul'},{he:'סיס',en:'Swift'},{he:'דרור',en:'Sparrow'},{he:'נץ',en:'Sparrowhawk'}],
+   artFn:drawCarml},
+];
+
+/* ── AREA ILLUSTRATIONS (SVG) ── */
+function mkSVG(w,h,b){return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${b}</svg>`}
+
+function drawHula(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#dbeafe" rx="6"/>
+  <rect x="0" y="35" width="100" height="25" rx="0" fill="#93c5fd" opacity=".5"/>
+  <ellipse cx="30" cy="36" rx="20" ry="6" fill="#60a5fa" opacity=".4"/>
+  <rect x="0" y="48" width="100" height="12" fill="#86efac" opacity=".4"/>
+  <line x1="10" y1="20" x2="10" y2="48" stroke="#15803d" stroke-width="1.5"/>
+  <ellipse cx="10" cy="18" rx="5" ry="7" fill="#15803d" opacity=".7"/>
+  <line x1="20" y1="25" x2="20" y2="48" stroke="#15803d" stroke-width="1.2"/>
+  <ellipse cx="20" cy="23" rx="4" ry="5" fill="#15803d" opacity=".6"/>
+  <ellipse cx="60" cy="30" rx="15" ry="8" fill="#e2e8f0"/>
+  <ellipse cx="60" cy="28" rx="12" ry="6" fill="#f8fafc"/>
+  <circle cx="68" cy="24" r="4" fill="#f8fafc"/>
+  <circle cx="69" cy="23.5" r=".9" fill="#1e293b"/>
+  <path d="M70 25 Q74 24 73 27" fill="#fbbf24"/>
+  <path d="M50 31 L52 34 L48 34Z" fill="#e2e8f0"/>
+`)}
+
+function drawGalil(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#dcfce7" rx="6"/>
+  <path d="M0 60 Q30 30 50 40 Q70 50 100 20 L100 60Z" fill="#15803d" opacity=".25"/>
+  <path d="M20 40 Q40 20 60 30 Q80 40 100 15" fill="none" stroke="#166534" stroke-width="1.5" opacity=".5"/>
+  <ellipse cx="70" cy="28" rx="14" ry="10" fill="#854d0e" opacity=".2"/>
+  <ellipse cx="70" cy="26" rx="11" ry="8" fill="#ca8a04" opacity=".2"/>
+  <circle cx="78" cy="21" r="5" fill="#fef9c3"/>
+  <circle cx="76" cy="20" r="3" fill="#fef9c3"/>
+  <circle cx="77" cy="20" r="1.5" fill="#ca8a04"/>
+  <circle cx="77" cy="20" r=".7" fill="#1c1917"/>
+  <path d="M62 19 L66 22 L69 19" fill="#ca8a04"/>
+  <path d="M79 22 Q83 23 81 25" fill="#fbbf24"/>
+`)}
+
+function drawNegev(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#fef3c7" rx="6"/>
+  <path d="M0 45 Q25 35 50 42 Q75 49 100 38 L100 60 L0 60Z" fill="#d97706" opacity=".2"/>
+  <path d="M15 45 L20 30 L25 45Z" fill="#d97706" opacity=".3"/>
+  <path d="M40 45 L47 25 L54 45Z" fill="#d97706" opacity=".25"/>
+  <path d="M70 45 L76 32 L82 45Z" fill="#d97706" opacity=".2"/>
+  <circle cx="30" cy="20" r="10" fill="#fde68a" opacity=".7"/>
+  <circle cx="30" cy="20" r="7" fill="#fbbf24" opacity=".5"/>
+  <ellipse cx="68" cy="28" rx="14" ry="10" fill="#92400e" opacity=".15"/>
+  <ellipse cx="68" cy="27" rx="11" ry="8" fill="#a16207" opacity=".2"/>
+  <circle cx="76" cy="21" r="5.5" fill="#fef9c3"/>
+  <circle cx="77" cy="20" r="1.4" fill="#1c1917"/>
+  <path d="M78 22 Q83 24 79 27" fill="#e65100"/>
+  <path d="M57 27 Q50 18 58 14 Q64 21 57 27Z" fill="#92400e" opacity=".5"/>
+  <path d="M79 27 Q86 18 78 14 Q72 21 79 27Z" fill="#92400e" opacity=".5"/>
+`)}
+
+function drawCoast(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#cffafe" rx="6"/>
+  <rect x="0" y="30" width="100" height="30" rx="0" fill="#38bdf8" opacity=".35"/>
+  <path d="M0 30 Q20 26 40 30 Q60 34 80 28 Q90 26 100 30" fill="none" stroke="#0284c7" stroke-width="1" opacity=".5"/>
+  <rect x="0" y="48" width="100" height="12" fill="#e2e8f0" opacity=".5"/>
+  <ellipse cx="30" cy="24" rx="12" ry="8" fill="#f8fafc"/>
+  <ellipse cx="30" cy="22" rx="9" ry="6" fill="#fff"/>
+  <circle cx="36" cy="19" r="4" fill="#fff"/>
+  <circle cx="37" cy="18.5" r="1" fill="#1e293b"/>
+  <path d="M38 20 Q42 21 39 23" fill="#fbbf24"/>
+  <path d="M20 23 Q13 16 20 12 Q26 19 20 23Z" fill="#e2e8f0"/>
+  <path d="M40 23 Q47 16 40 12 Q34 19 40 23Z" fill="#e2e8f0"/>
+`)}
+
+function drawEilat(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#ede9fe" rx="6"/>
+  <rect x="0" y="30" width="100" height="30" fill="#7dd3fc" opacity=".4"/>
+  <path d="M0 42 Q25 36 50 42 Q75 48 100 40 L100 60 L0 60Z" fill="#38bdf8" opacity=".3"/>
+  <rect x="0" y="50" width="100" height="10" fill="#fde68a" opacity=".5"/>
+  <ellipse cx="28" cy="25" rx="5" ry="10" fill="#f472b6"/>
+  <ellipse cx="28" cy="24" rx="3" ry="8" fill="#ec4899"/>
+  <circle cx="31" cy="16" r="3" fill="#f472b6"/>
+  <circle cx="33" cy="15.5" r=".8" fill="#1c1917"/>
+  <path d="M33 17 Q37 19 34 22 Q31 19 33 17Z" fill="#be185d"/>
+  <rect x="25" y="33" width="1.2" height="11" rx=".6" fill="#f472b6" transform="rotate(5 25 33)"/>
+  <rect x="30" y="33" width="1.2" height="11" rx=".6" fill="#f472b6" transform="rotate(-5 30 33)"/>
+  <circle cx="65" cy="15" r="10" fill="#fde68a" opacity=".6"/>
+  <circle cx="65" cy="15" r="7" fill="#fbbf24" opacity=".4"/>
+`)}
+
+function drawCarml(){return mkSVG(100,60,`
+  <rect width="100" height="60" fill="#ffedd5" rx="6"/>
+  <path d="M0 50 Q30 35 60 45 Q80 52 100 38 L100 60 L0 60Z" fill="#15803d" opacity=".2"/>
+  <line x1="40" y1="20" x2="40" y2="50" stroke="#15803d" stroke-width="1.5"/>
+  <ellipse cx="40" cy="17" rx="6" ry="9" fill="#16a34a" opacity=".7"/>
+  <line x1="55" y1="28" x2="55" y2="50" stroke="#15803d" stroke-width="1.2"/>
+  <ellipse cx="55" cy="25" rx="5" ry="7" fill="#16a34a" opacity=".6"/>
+  <ellipse cx="72" cy="26" rx="12" ry="9" fill="#854d0e" opacity=".2"/>
+  <circle cx="78" cy="21" r="4.5" fill="#fef9c3"/>
+  <circle cx="78" cy="20" r="2.5" fill="#92400e"/>
+  <circle cx="78" cy="20" r="1" fill="#1c1917"/>
+  <path d="M75 18 L78 15 L81 18" fill="#92400e"/>
+  <path d="M79 22 Q83 23 81 25" fill="#fbbf24"/>
+  <ellipse cx="72" cy="29" rx="7" ry="3.5" fill="#fef08a"/>
+`)}
+
+/* ── SLOT SVG birds (small, for collected slots) ── */
+function mkBirdSVG(famId, birdHe){
+  const c={'hula':'#1a5fa8','galil':'#2d6a2d','negev':'#c8941a','coast':'#0e7490','eilat':'#7c3aed','carml':'#c2410c'}[famId]||'#888';
+  const emojis={'עגור אפור':'🦢','דיה לבנה':'🦩','שלמונית':'🐦','קורמורן':'🐧','ינשוף חום':'🦉','עיט':'🦅','נקר ירוק':'🌿','שחרור':'🐤','שקנאי':'🦅','ינשוף מדבר':'🦉','שריקן':'🐦','חנק':'🐦','שחף':'🌊','שחרורית':'🕊','מדמורה':'🐦','חסידה':'🦩','פלמינגו':'🦩','שלוי':'🐦','עיט דיג':'🦅','חסידון':'🕊','בולבול':'🐦','סיס':'💨','דרור':'🐦','נץ':'🦅'};
+  const em=emojis[birdHe]||'🐦';
+  return`<div style="width:44px;height:56px;border-radius:8px;background:#fff;border:2px solid ${c};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;box-shadow:0 1px 3px rgba(0,0,0,.12)">${em}<div style="font-size:6px;font-weight:700;color:${c};text-align:center;padding:0 2px;margin-top:1px;line-height:1.1">${birdHe}</div></div>`;
+}
+
+/* ── GAME STATE ── */
+let pH=[],cH=[],deck=[],pS=[],cS=[],selF=null,selC=null,myTurn=true,busy=false;
+const getF=id=>RFAM.find(f=>f.id===id);
+
+/* build area panels */
+function buildAreas(){
+  const el=document.getElementById('areas');el.innerHTML='';
+  RFAM.forEach(f=>{
+    const d=document.createElement('div');d.className='area';d.id='area-'+f.id;
+    d.innerHTML=`
+      <div class="area-head" style="background:${f.col}">
+        <div class="area-bg">${f.artFn()}</div>
+        <div class="area-name">${f.name}</div>
+      </div>
+      <div class="area-slots" id="slots-${f.id}">
+        ${f.birds.map((_,i)=>`<div class="slot" id="slot-${f.id}-${i}" data-i="${i}">?</div>`).join('')}
+      </div>`;
+    el.appendChild(d);
+  });
+}
+
+function buildDeck(){
+  const d=[];
+  RFAM.forEach(f=>f.birds.forEach(b=>d.push({fam:f.id,he:b.he,en:b.en})));
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function startGame(){
+  document.getElementById('winov').classList.remove('on');
+  deck=buildDeck();pH=deck.splice(0,7);cH=deck.splice(0,7);
+  pS=[];cS=[];selF=null;selC=null;myTurn=true;busy=false;
+  buildAreas();
+  chk(pH,pS);chk(cH,cS);
+  setSt('התור שלך! בחר אזור, בחר ציפור, ולחץ "בקש קלף!"','');
+  render();
+}
+
+function chk(hand,sets){
+  RFAM.forEach(f=>{
+    if(sets.includes(f.id))return;
+    if(hand.filter(c=>c.fam===f.id).length===4){
+      sets.push(f.id);
+      for(let i=hand.length-1,n=0;i>=0&&n<4;i--)
+        if(hand[i].fam===f.id){hand.splice(i,1);n++;}
+    }
+  });
+}
+
+function updateSlots(){
+  /* show collected birds per region */
+  RFAM.forEach(f=>{
+    const myCards=pH.filter(c=>c.fam===f.id);
+    for(let i=0;i<4;i++){
+      const slot=document.getElementById(`slot-${f.id}-${i}`);
+      if(!slot)continue;
+      if(i<myCards.length){
+        slot.className='slot filled';
+        slot.innerHTML=mkBirdSVG(f.id,myCards[i].he);
+      } else if(pS.includes(f.id)){
+        slot.className='slot filled';
+        slot.innerHTML=mkBirdSVG(f.id,f.birds[i].he);
+      } else {
+        slot.className='slot';slot.innerHTML='?';
+      }
+    }
+    const areaEl=document.getElementById('area-'+f.id);
+    if(areaEl){
+      areaEl.style.borderColor=pS.includes(f.id)?`${f.col}`:'rgba(26,60,110,.12)';
+      areaEl.style.borderWidth=pS.includes(f.id)?'3px':'2px';
+    }
+  });
+}
+
+function render(){
+  document.getElementById('ps').textContent=pS.length;
+  document.getElementById('cs').textContent=cS.length;
+  document.getElementById('dk').textContent=deck.length;
+  const ch=document.getElementById('cpu-h');ch.innerHTML='';
+  document.getElementById('cc-lbl').textContent=`${cH.length} קלפים`;
+  cH.forEach(()=>{const d=document.createElement('div');d.className='cback';ch.appendChild(d);});
+  const tb=document.getElementById('tbadge');
+  tb.textContent=myTurn?'התור שלך!':'המחשב חושב...';
+  tb.className='gturn '+(myTurn?'gt-y':'gt-c');
+  updateSlots();
+  renderAsk();
+  checkEnd();
+}
+
+function renderAsk(){
+  const mf=[...new Set(pH.map(c=>c.fam))];
+  const fb=document.getElementById('fbtns');fb.innerHTML='';
+  mf.forEach(fid=>{
+    const f=getF(fid);const b=document.createElement('button');
+    b.className='fbtn'+(selF===fid?' act':'');
+    b.disabled=!myTurn||busy;
+    b.style.background=selF===fid?f.bg:'var(--mu-bg)';
+    b.style.color=f.col;
+    b.style.borderColor=f.col;
+    b.innerHTML=`<div class="fbtn-icon" style="background:${f.col}">${['🌊','🌿','☀️','🌊','🌅','🌲'][RFAM.indexOf(f)]}</div>${f.name}`;
+    b.onclick=()=>{selF=fid;selC=null;renderAsk();};fb.appendChild(b);
+  });
+  const cb=document.getElementById('cbtns');cb.innerHTML='';
+  if(selF){
+    const f=getF(selF);
+    const owned=pH.filter(c=>c.fam===selF).map(c=>c.he);
+    const miss=f.birds.filter(b=>!owned.includes(b.he));
+    if(!miss.length){cb.innerHTML='<span style="font-size:11px;color:var(--mu-bark)">יש לך את כולן!</span>';}
+    else miss.forEach(b=>{
+      const btn=document.createElement('button');
+      btn.className='cbtn'+(selC===b.he?' act':'');
+      btn.disabled=!myTurn||busy;
+      btn.textContent=b.he;
+      btn.onclick=()=>{selC=b.he;renderAsk();};cb.appendChild(btn);
+    });
+  } else cb.innerHTML='<span style="font-size:11px;color:var(--mu-bark)">← בחר אזור קודם</span>';
+  document.getElementById('abtn').disabled=!(myTurn&&!busy&&selF&&selC);
+}
+
+function doAsk(){
+  if(!myTurn||busy||!selF||!selC)return;busy=true;
+  const idx=cH.findIndex(c=>c.fam===selF&&c.he===selC);
+  const cn=selC;
+  if(idx!==-1){
+    const card=cH.splice(idx,1)[0];pH.push(card);chk(pH,pS);
+    setSt(`✓ כן! ל-CPU היה ${card.he}! הציפור נכנסה לאזור ${getF(selF).name}. בקש שוב!`,'g');
+    if(cH.length===0&&deck.length>0){cH.push(deck.splice(0,1)[0]);chk(cH,cS);}
+    selF=null;selC=null;busy=false;render();
+  } else {
+    setSt(`✗ "לך לדוג!" אין ${cn} ל-CPU. שלפת קלף. תור המחשב.`,'b');
+    if(deck.length>0){pH.push(deck.splice(0,1)[0]);chk(pH,pS);}
+    selF=null;selC=null;myTurn=false;render();setTimeout(cpuTurn,1700);
+  }
+}
+
+function cpuTurn(){
+  if(cH.length===0){myTurn=true;busy=false;setSt('התור שלך!','');render();return;}
+  const fc={};cH.forEach(c=>{fc[c.fam]=(fc[c.fam]||0)+1;});
+  const bf=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0][0];
+  const f=getF(bf);
+  const owned=cH.filter(c=>c.fam===bf).map(c=>c.he);
+  const miss=f.birds.filter(b=>!owned.includes(b.he));
+  if(!miss.length){myTurn=true;busy=false;setSt('התור שלך!','');render();return;}
+  const want=miss[Math.floor(Math.random()*miss.length)];
+  const idx=pH.findIndex(c=>c.fam===bf&&c.he===want.he);
+  if(idx!==-1){
+    const card=pH.splice(idx,1)[0];cH.push(card);chk(cH,cS);
+    setSt(`המחשב ביקש ${want.he} — היה לך! המחשב שוב...`,'b');
+    if(pH.length===0&&deck.length>0){pH.push(deck.splice(0,1)[0]);chk(pH,pS);}
+    render();setTimeout(cpuTurn,1500);
+  } else {
+    setSt(`המחשב ביקש ${want.he} — "לך לדוג!" התור שלך.`,'g');
+    if(deck.length>0){cH.push(deck.splice(0,1)[0]);chk(cH,cS);}
+    myTurn=true;busy=false;render();
+  }
+}
+
+function checkEnd(){
+  if(pS.length+cS.length>=RFAM.length||(pH.length===0&&cH.length===0&&deck.length===0)){
+    setTimeout(()=>{
+      const p=pS.length,c=cS.length;
+      document.getElementById('wico').textContent=p>c?'🏆':p===c?'🤝':'😢';
+      document.getElementById('wtit').textContent=p>c?'ניצחת!':p===c?'תיקו!':'המחשב ניצח';
+      document.getElementById('wsc').textContent=`אתה: ${p} סטים · CPU: ${c} סטים`;
+      const ws=document.getElementById('wsets');ws.innerHTML='';
+      pS.forEach(sid=>{const f=getF(sid);const t=document.createElement('span');t.className='wst';t.style.background=f.col;t.textContent=f.name;ws.appendChild(t);});
+      cS.forEach(sid=>{const f=getF(sid);const t=document.createElement('span');t.className='wst';t.style.background='#7f1d1d';t.textContent=f.name+' (CPU)';ws.appendChild(t);});
+      document.getElementById('winov').classList.add('on');
+    },600);
+  }
+}
+
+function setSt(msg,type){
+  const el=document.getElementById('stmsg');
+  el.textContent=msg;el.className=type?type:'';
+  el.setAttribute('style',`background:#fff;border:2px solid;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;min-height:46px;display:flex;align-items:center;line-height:1.4;border-color:${type==='g'?'#16a34a;color:#15803d':type==='b'?'#dc2626;color:#991b1b':'rgba(26,60,110,.15);color:var(--mu-blue)'}`);
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.ntab').forEach(t=>{if(t.textContent.trim()==={game:'משחק',map:'מפה',ar:'AR סיור'}[id])t.classList.add('on')});
+}
+
+startGame();
+</script>
