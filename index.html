@@ -47,22 +47,76 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
 .sci-name{font-size:13px;font-weight:700;color:var(--mu-blue);margin-bottom:2px}
 .sci-role{font-size:11px;color:var(--mu-bark);margin-bottom:4px}
 .sci-cards-row{display:flex;gap:3px;flex-wrap:wrap}
-.sci-back{width:22px;height:30px;border-radius:3px;background:var(--mu-dark);border:1px solid rgba(255,255,255,.15);background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.05) 3px,rgba(255,255,255,.05) 4px)}
 .sci-stats{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .sci-stat{font-size:11px;color:rgba(26,60,110,.6);background:var(--mu-bg);border-radius:6px;padding:2px 8px;font-weight:500}
 .sci-stat b{color:var(--mu-dark)}
 
-/* AREAS */
+/* AREAS & PLAYING CARDS */
 #areas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.area{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;overflow:hidden;transition:border-color .3s,border-width .3s}
-.area-head{height:68px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:0 8px 6px}
-.area-deco{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding:6px;font-size:36px;opacity:.28}
-.area-name{position:relative;z-index:1;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
-.area-slots{display:flex;gap:4px;padding:6px;flex-wrap:wrap;min-height:64px;align-items:flex-start}
-.slot{width:44px;height:58px;border-radius:8px;border:2px dashed rgba(0,0,0,.14);background:rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(0,0,0,.2);transition:all .35s;flex-direction:column;gap:1px}
-.slot.filled{border-style:solid;border-width:2px;background:#fff}
-.slot-em{font-size:20px;line-height:1.1}
-.slot-nm{font-size:5.5px;font-weight:700;text-align:center;padding:0 1px;color:#333;line-height:1.2}
+.area{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;overflow:hidden;transition:border-color .3s,border-width .3s,box-shadow .3s}
+.area.complete{box-shadow:0 4px 14px rgba(200,148,26,.22)}
+.area-head{height:64px;position:relative;display:flex;align-items:flex-end;padding:0 8px 6px;overflow:hidden}
+.area-bg{position:absolute;inset:0}
+.area-bg svg{width:100%;height:100%;display:block}
+.area-name{position:relative;z-index:1;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.75);line-height:1.2}
+.area-slots{display:flex;gap:4px;padding:7px 6px;flex-wrap:wrap;min-height:58px;align-items:flex-start}
+.slot{
+  width:44px;height:58px;border-radius:8px;border:2px dashed rgba(0,0,0,.14);
+  background:rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:rgba(0,0,0,.22);transition:all .35s
+}
+.slot.filled{border:none;padding:0;background:transparent;overflow:visible}
+.play-card{
+  width:44px;height:58px;border-radius:8px;background:#fff;
+  display:flex;flex-direction:column;overflow:hidden;
+  border:2px solid var(--card-col,#888);
+  box-shadow:0 2px 5px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.8)
+}
+.play-card-band{height:10px;background:var(--card-col);flex-shrink:0}
+.play-card-art{
+  flex:1;display:flex;align-items:center;justify-content:center;font-size:21px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,#f5efe0 100%)
+}
+.play-card-name{
+  font-size:5.5px;font-weight:800;color:var(--card-col);text-align:center;
+  padding:2px 1px;line-height:1.15;background:#fff;border-top:1px solid rgba(0,0,0,.06)
+}
+.play-card.en{font-size:4px;font-weight:600;color:rgba(0,0,0,.4);padding-bottom:2px;margin-top:-1px}
+.area-set-badge{
+  position:absolute;top:4px;left:6px;z-index:2;font-size:7px;font-weight:800;
+  background:var(--mu-gold);color:var(--mu-dark);padding:2px 6px;border-radius:8px
+}
+
+/* player hand */
+#hand-sec{
+  background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:12px;padding:8px 10px
+}
+.hand-head{font-size:10px;font-weight:700;color:rgba(26,60,110,.65);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.hand-head b{font-size:12px;color:var(--mu-blue)}
+#player-hand{display:flex;flex-wrap:wrap;gap:5px;min-height:62px;align-items:flex-start}
+.hand-card-wrap{transition:transform .12s}
+.hand-card-wrap:hover{transform:translateY(-3px)}
+.hand-empty{font-size:11px;color:var(--mu-bark);font-style:italic;padding:8px 4px}
+
+/* scientist card backs */
+.sci-back{
+  width:22px;height:30px;border-radius:4px;flex-shrink:0;
+  background:linear-gradient(145deg,#1a3c6e,#0f2040);
+  border:1px solid rgba(200,148,26,.45);
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  position:relative;overflow:hidden
+}
+.sci-back::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.04) 3px,rgba(255,255,255,.04) 4px)
+}
+.sci-back::after{content:'🐦';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;opacity:.85}
+.fbtn-icon{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.cbtn-mini{display:inline-flex;align-items:center;gap:4px}
+.cbtn-mini .play-card{width:26px;height:34px;border-radius:5px;font-size:12px}
+.cbtn-mini .play-card-band{height:6px}
+.cbtn-mini .play-card-art{font-size:14px}
+.cbtn-mini .play-card-name,.cbtn-mini .play-card.en{display:none}
 
 /* ASK */
 #ask-sec{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:12px;padding:11px 14px}
@@ -319,6 +373,11 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
 
   <div id="areas"></div>
 
+  <div id="hand-sec">
+    <div class="hand-head"><span>היד שלך — קלפי המשחק</span><b id="hand-count">0</b></div>
+    <div id="player-hand"></div>
+  </div>
+
   <div id="ask-sec">
     <div class="ask-t">🐦 בקש קלף מהמדענית</div>
     <div class="ask-row">
@@ -532,19 +591,90 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(
 </div>
 
 <script>
+/* ── REGION SCENE ART (area headers) ── */
+function mkSVG(w,h,b){return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${b}</svg>`}
+function drawHula(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#dbeafe"/>
+  <rect x="0" y="38" width="100" height="26" fill="#93c5fd" opacity=".55"/>
+  <ellipse cx="28" cy="40" rx="18" ry="5" fill="#60a5fa" opacity=".45"/>
+  <rect x="0" y="50" width="100" height="14" fill="#86efac" opacity=".45"/>
+  <line x1="12" y1="22" x2="12" y2="50" stroke="#15803d" stroke-width="1.5"/>
+  <ellipse cx="12" cy="20" rx="5" ry="7" fill="#15803d" opacity=".75"/>
+  <ellipse cx="62" cy="30" rx="14" ry="8" fill="#e2e8f0"/>
+  <circle cx="70" cy="24" r="4" fill="#f8fafc"/>
+  <circle cx="71" cy="23.5" r=".9" fill="#1e293b"/>
+`)}
+function drawGalil(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#dcfce7"/>
+  <path d="M0 64 Q30 34 50 44 Q70 54 100 24 L100 64Z" fill="#15803d" opacity=".28"/>
+  <ellipse cx="72" cy="28" rx="12" ry="9" fill="#ca8a04" opacity=".25"/>
+  <circle cx="80" cy="22" r="5" fill="#fef9c3"/>
+  <circle cx="79" cy="21" r="1.4" fill="#1c1917"/>
+`)}
+function drawNegev(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#fef3c7"/>
+  <path d="M0 48 Q25 38 50 45 Q75 52 100 40 L100 64 L0 64Z" fill="#d97706" opacity=".22"/>
+  <path d="M18 48 L22 32 L26 48Z" fill="#d97706" opacity=".35"/>
+  <circle cx="28" cy="18" r="9" fill="#fde68a" opacity=".75"/>
+  <circle cx="70" cy="28" r="5" fill="#fef9c3"/>
+`)}
+function drawCoast(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#cffafe"/>
+  <rect x="0" y="32" width="100" height="32" fill="#38bdf8" opacity=".38"/>
+  <path d="M0 32 Q25 28 50 32 Q75 36 100 30" fill="none" stroke="#0284c7" stroke-width="1" opacity=".5"/>
+  <ellipse cx="28" cy="24" rx="11" ry="7" fill="#fff"/>
+  <circle cx="34" cy="19" r="3.5" fill="#fff"/>
+`)}
+function drawEilat(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#ede9fe"/>
+  <rect x="0" y="32" width="100" height="32" fill="#7dd3fc" opacity=".42"/>
+  <ellipse cx="26" cy="24" rx="4" ry="9" fill="#f472b6"/>
+  <circle cx="62" cy="14" r="9" fill="#fde68a" opacity=".65"/>
+`)}
+function drawCarml(){return mkSVG(100,64,`
+  <rect width="100" height="64" fill="#ffedd5"/>
+  <path d="M0 52 Q30 38 60 48 Q85 55 100 42 L100 64 L0 64Z" fill="#15803d" opacity=".22"/>
+  <line x1="38" y1="22" x2="38" y2="52" stroke="#15803d" stroke-width="1.5"/>
+  <ellipse cx="38" cy="19" rx="6" ry="8" fill="#16a34a" opacity=".75"/>
+  <circle cx="76" cy="22" r="4" fill="#fef9c3"/>
+`)}
+
+/* ── PLAYING CARD COMPONENT ── */
+function birdEmoji(he,em){
+  if(em)return em;
+  const m={'עגור אפור':'🦢','דיה לבנה':'🦩','שלמונית':'🐦','קורמורן':'🐧','ינשוף חום':'🦉','עיט':'🦅','נקר ירוק':'🐦','שחרור':'🐤','שקנאי':'🦅','ינשוף מדבר':'🦉','שריקן':'🐦','חנק':'🐦','שחף':'🌊','שחרורית':'🕊️','מדמורה':'🐦','חסידה':'🦩','פלמינגו':'🦩','שלוי':'🐦','עיט דיג':'🦅','חסידון':'🕊️','בולבול':'🐦','סיס':'💨','דרור':'🐦','נץ':'🦅'};
+  return m[he]||'🐦';
+}
+function mkPlayCard(famId,birdHe,em,en,compact){
+  const f=getF(famId);
+  const col=f?f.col:'#888';
+  const emoji=birdEmoji(birdHe,em);
+  const bird=f?.birds.find(b=>b.he===birdHe);
+  const enLbl=en||bird?.en||'';
+  if(compact){
+    return`<div class="play-card" style="--card-col:${col}"><div class="play-card-band"></div><div class="play-card-art">${emoji}</div><div class="play-card-name">${birdHe}</div></div>`;
+  }
+  return`<div class="play-card" style="--card-col:${col}">
+    <div class="play-card-band"></div>
+    <div class="play-card-art">${emoji}</div>
+    <div class="play-card-name">${birdHe}</div>
+    ${enLbl?`<div class="play-card en">${enLbl}</div>`:''}
+  </div>`;
+}
+
 /* ── DATA ── */
 const RFAM=[
-  {id:'hula', name:'עמק החולה',col:'#1a5fa8',bg:'#dbeafe',icon:'🌊',
+  {id:'hula', name:'עמק החולה',col:'#1a5fa8',bg:'#dbeafe',icon:'🌊',artFn:drawHula,
    birds:[{he:'עגור אפור',en:'Common Crane',em:'🦢'},{he:'דיה לבנה',en:'White Pelican',em:'🦩'},{he:'שלמונית',en:'Kingfisher',em:'🐦'},{he:'קורמורן',en:'Cormorant',em:'🐧'}]},
-  {id:'galil',name:'הגליל',    col:'#2d6a2d',bg:'#dcfce7',icon:'🌿',
+  {id:'galil',name:'הגליל',    col:'#2d6a2d',bg:'#dcfce7',icon:'🌿',artFn:drawGalil,
    birds:[{he:'ינשוף חום',en:'Tawny Owl',em:'🦉'},{he:'עיט',en:'Short-toed Eagle',em:'🦅'},{he:'נקר ירוק',en:'Green Woodpecker',em:'🐦'},{he:'שחרור',en:'Blackbird',em:'🐤'}]},
-  {id:'negev',name:'הנגב',     col:'#c8941a',bg:'#fef3c7',icon:'☀️',
+  {id:'negev',name:'הנגב',     col:'#c8941a',bg:'#fef3c7',icon:'☀️',artFn:drawNegev,
    birds:[{he:'שקנאי',en:'Lappet-faced Vulture',em:'🦅'},{he:'ינשוף מדבר',en:'Pharaoh Eagle-owl',em:'🦉'},{he:'שריקן',en:'Trumpeter Finch',em:'🐦'},{he:'חנק',en:'Desert Wheatear',em:'🐦'}]},
-  {id:'coast',name:'החוף',     col:'#0e7490',bg:'#cffafe',icon:'🌊',
+  {id:'coast',name:'החוף',     col:'#0e7490',bg:'#cffafe',icon:'🌊',artFn:drawCoast,
    birds:[{he:'שחף',en:'Yellow-legged Gull',em:'🌊'},{he:'שחרורית',en:'Little Tern',em:'🕊️'},{he:'מדמורה',en:'Kentish Plover',em:'🐦'},{he:'חסידה',en:'White Stork',em:'🦩'}]},
-  {id:'eilat',name:'אילת',     col:'#7c3aed',bg:'#ede9fe',icon:'🌅',
+  {id:'eilat',name:'אילת',     col:'#7c3aed',bg:'#ede9fe',icon:'🌅',artFn:drawEilat,
    birds:[{he:'פלמינגו',en:'Greater Flamingo',em:'🦩'},{he:'שלוי',en:'Sooty Falcon',em:'🐦'},{he:'עיט דיג',en:'Osprey',em:'🦅'},{he:'חסידון',en:'Little Egret',em:'🕊️'}]},
-  {id:'carml',name:'הכרמל',    col:'#c2410c',bg:'#ffedd5',icon:'🌲',
+  {id:'carml',name:'הכרמל',    col:'#c2410c',bg:'#ffedd5',icon:'🌲',artFn:drawCarml,
    birds:[{he:'בולבול',en:'Common Bulbul',em:'🐦'},{he:'סיס',en:'Common Swift',em:'💨'},{he:'דרור',en:'House Sparrow',em:'🐦'},{he:'נץ',en:'Sparrowhawk',em:'🦅'}]},
 ];
 
@@ -601,7 +731,7 @@ function buildAreas(){
   RFAM.forEach(f=>{
     const d=document.createElement('div');d.className='area';d.id='area-'+f.id;
     d.innerHTML=`<div class="area-head" style="background:${f.col}">
-      <div class="area-deco">${f.icon}${f.icon}</div>
+      <div class="area-bg">${f.artFn()}</div>
       <div class="area-name">${f.name}</div></div>
       <div class="area-slots" id="slots-${f.id}">
         ${f.birds.map((_,i)=>`<div class="slot" id="slot-${f.id}-${i}">?</div>`).join('')}
@@ -647,18 +777,48 @@ function updateSlots(){
     const isSet=pS.includes(f.id);
     for(let i=0;i<4;i++){
       const slot=document.getElementById('slot-'+f.id+'-'+i);
-      if(!slot)return;
+      if(!slot)continue;
       const card=isSet?f.birds[i]:myCards[i];
       if(card){
         slot.className='slot filled';
-        slot.style.borderColor=f.col;
-        slot.innerHTML='<div class="slot-em">'+(card.em||f.birds[i].em)+'</div><div class="slot-nm">'+(card.he||f.birds[i].he)+'</div>';
+        const he=card.he||f.birds[i].he;
+        const em=card.em||f.birds[i].em;
+        const en=card.en||f.birds[i].en;
+        slot.innerHTML=mkPlayCard(f.id,he,em,en);
       } else {
-        slot.className='slot';slot.style.borderColor='';slot.innerHTML='?';
+        slot.className='slot';
+        slot.innerHTML='?';
       }
     }
     const a=document.getElementById('area-'+f.id);
-    if(a){a.style.borderColor=isSet?f.col:'rgba(26,60,110,.12)';a.style.borderWidth=isSet?'3px':'2px';}
+    if(!a)return;
+    a.style.borderColor=isSet?f.col:'rgba(26,60,110,.12)';
+    a.style.borderWidth=isSet?'3px':'2px';
+    a.classList.toggle('complete',isSet);
+    let badge=a.querySelector('.area-set-badge');
+    if(isSet){
+      if(!badge){badge=document.createElement('div');badge.className='area-set-badge';a.querySelector('.area-head')?.appendChild(badge);}
+      badge.textContent='סט מלא ✓';
+    } else if(badge)badge.remove();
+  });
+}
+
+function renderPlayerHand(){
+  const hand=document.getElementById('player-hand');
+  const cnt=document.getElementById('hand-count');
+  if(!hand)return;
+  if(cnt)cnt.textContent=pH.length;
+  if(!pH.length){
+    hand.innerHTML='<span class="hand-empty">אין קלפים ביד — בקש מהמדענית!</span>';
+    return;
+  }
+  hand.innerHTML='';
+  pH.forEach(function(c){
+    const w=document.createElement('div');
+    w.className='hand-card-wrap';
+    w.title=c.he+' · '+c.en;
+    w.innerHTML=mkPlayCard(c.fam,c.he,c.em,c.en);
+    hand.appendChild(w);
   });
 }
 
@@ -677,7 +837,7 @@ function render(){
   tb.className='gturn '+(myTurn?'gt-y':'gt-s');
   const sc=document.getElementById('sci-cards');sc.innerHTML='';
   cH.forEach(function(){const d=document.createElement('div');d.className='sci-back';sc.appendChild(d);});
-  updateSlots();renderAsk();checkEnd();
+  updateSlots();renderPlayerHand();renderAsk();checkEnd();
 }
 
 function renderAsk(){
@@ -688,7 +848,7 @@ function renderAsk(){
     b.className='fbtn'+(selF===fid?' act':'');
     b.disabled=!myTurn||busy;
     b.style.cssText='background:'+(selF===fid?f.bg:'var(--mu-bg)')+';color:'+f.col+';border-color:'+f.col;
-    b.innerHTML='<span>'+f.icon+'</span>'+f.name;
+    b.innerHTML='<div class="fbtn-icon" style="background:'+f.col+'">'+f.icon+'</div>'+f.name;
     b.onclick=function(){selF=fid;selC=null;renderAsk();};
     fb.appendChild(b);
   });
@@ -702,7 +862,7 @@ function renderAsk(){
       const btn=document.createElement('button');
       btn.className='cbtn'+(selC===b.he?' act':'');
       btn.disabled=!myTurn||busy;
-      btn.textContent=b.em+' '+b.he;
+      btn.innerHTML='<span class="cbtn-mini">'+mkPlayCard(f.id,b.he,b.em,b.en,true)+'<span>'+b.he+'</span></span>';
       btn.onclick=function(){selC=b.he;renderAsk();};
       cb.appendChild(btn);
     });
