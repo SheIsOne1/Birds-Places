@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bird Kwartet — ציפורי ישראל | מוזיאון הטבע שטיינהרדט</title>
+<style>
+:root{
+  --mu-blue:#1a3c6e;--mu-gold:#c8941a;--mu-gold-light:#e8b84b;
+  --mu-green:#2d6a2d;--mu-green-light:#4a9e4a;--mu-sand:#f5efe0;
+  --mu-bark:#7a5c2e;--mu-bg:#f0ead8;--mu-dark:#0f2040;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--mu-bg);color:var(--mu-dark);direction:rtl;min-height:100vh;display:flex;flex-direction:column}
+#app{display:flex;flex-direction:column;flex:1}
+
+/* NAV */
+#nav{background:var(--mu-dark);padding:0 18px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-lm{width:36px;height:36px;border-radius:50%;background:var(--mu-gold);display:flex;align-items:center;justify-content:center;font-size:20px}
+.nav-title{font-size:16px;font-weight:700;color:#fff}
+.nav-title span{color:var(--mu-gold-light)}
+.nav-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.nav-tabs{display:flex;gap:3px}
+.ntab{font-size:12px;font-weight:600;color:rgba(255,255,255,.6);padding:7px 14px;border-radius:6px;cursor:pointer;border:none;background:transparent;font-family:inherit;transition:all .15s}
+.ntab:hover{background:rgba(255,255,255,.08);color:#fff}
+.ntab.on{background:var(--mu-gold);color:var(--mu-dark)}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.on{display:flex}
+
+/* ═══ GAME ═══ */
+#gs{background:var(--mu-bg);flex:1;display:flex;flex-direction:column;padding:12px 14px;gap:9px}
+.gbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.gpill{background:#fff;border:1.5px solid rgba(26,60,110,.18);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--mu-blue);display:flex;align-items:center;gap:6px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.gpill b{color:var(--mu-dark);font-size:14px}
+.gturn{border-radius:20px;padding:5px 15px;font-size:12px;font-weight:700;border:1.5px solid}
+.gt-y{background:var(--mu-green);color:#fff;border-color:var(--mu-green-light)}
+.gt-s{background:#7f1d1d;color:#fff;border-color:#dc2626}
+#stmsg{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--mu-blue);font-weight:600;min-height:46px;display:flex;align-items:center;gap:8px;line-height:1.4;transition:all .3s}
+#stmsg.g{border-color:#16a34a;color:#15803d}
+#stmsg.b{border-color:#dc2626;color:#991b1b}
+
+/* SCIENTIST opponent card */
+#scientist-card{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+.sci-avatar{width:54px;height:54px;border-radius:50%;flex-shrink:0;border:2px solid var(--mu-gold);display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--mu-sand)}
+.sci-info{flex:1}
+.sci-name{font-size:13px;font-weight:700;color:var(--mu-blue);margin-bottom:2px}
+.sci-role{font-size:11px;color:var(--mu-bark);margin-bottom:4px}
+.sci-cards-row{display:flex;gap:3px;flex-wrap:wrap}
+.sci-back{width:22px;height:30px;border-radius:3px;background:var(--mu-dark);border:1px solid rgba(255,255,255,.15);background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.05) 3px,rgba(255,255,255,.05) 4px)}
+.sci-stats{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.sci-stat{font-size:11px;color:rgba(26,60,110,.6);background:var(--mu-bg);border-radius:6px;padding:2px 8px;font-weight:500}
+.sci-stat b{color:var(--mu-dark)}
+
+/* AREAS */
+#areas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.area{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;overflow:hidden;transition:border-color .3s,border-width .3s}
+.area-head{height:68px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:0 8px 6px}
+.area-deco{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding:6px;font-size:36px;opacity:.28}
+.area-name{position:relative;z-index:1;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.area-slots{display:flex;gap:4px;padding:6px;flex-wrap:wrap;min-height:64px;align-items:flex-start}
+.slot{width:44px;height:58px;border-radius:8px;border:2px dashed rgba(0,0,0,.14);background:rgba(0,0,0,.03);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(0,0,0,.2);transition:all .35s;flex-direction:column;gap:1px}
+.slot.filled{border-style:solid;border-width:2px;background:#fff}
+.slot-em{font-size:20px;line-height:1.1}
+.slot-nm{font-size:5.5px;font-weight:700;text-align:center;padding:0 1px;color:#333;line-height:1.2}
+
+/* ASK */
+#ask-sec{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:12px;padding:11px 14px}
+.ask-t{font-size:13px;font-weight:700;color:var(--mu-blue);margin-bottom:9px}
+.ask-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ask-lbl{font-size:11px;font-weight:700;color:var(--mu-bark);flex-shrink:0;min-width:52px}
+.fbtns,.cbtns{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.fbtn{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;font-family:inherit;padding:5px 12px;border-radius:20px;cursor:pointer;border:2px solid transparent;transition:all .14s;background:var(--mu-bg)}
+.fbtn:hover{filter:brightness(.93)}
+.fbtn.act{border-color:var(--mu-dark);box-shadow:0 0 0 3px var(--mu-gold)}
+.fbtn:disabled{opacity:.3;cursor:not-allowed}
+.cbtn{font-size:12px;font-weight:600;font-family:inherit;padding:5px 13px;border-radius:8px;border:2px solid rgba(26,60,110,.2);background:#fff;color:var(--mu-blue);cursor:pointer;transition:all .14s}
+.cbtn:hover,.cbtn.act{background:var(--mu-blue);color:#fff;border-color:var(--mu-blue)}
+.cbtn:disabled{opacity:.3;cursor:not-allowed}
+.ago{font-family:inherit;font-size:17px;font-weight:700;padding:11px 36px;border-radius:12px;border:none;background:var(--mu-gold);color:var(--mu-dark);cursor:pointer;box-shadow:0 4px 0 var(--mu-bark);transition:all .12s;letter-spacing:.3px}
+.ago:disabled{background:#ccc;color:#888;box-shadow:0 4px 0 #aaa;cursor:not-allowed}
+.ago:not(:disabled):hover{background:var(--mu-gold-light)}
+.ago:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 var(--mu-bark)}
+
+/* ═══ MAP ═══ */
+#ms{background:var(--mu-bg);flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.page-title{font-size:20px;font-weight:700;color:var(--mu-blue);margin-bottom:3px}
+.page-sub{font-size:12px;color:var(--mu-bark)}
+.map-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0}
+.map-wrap{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:14px;overflow:hidden;position:relative;min-height:340px}
+.map-wrap svg{width:100%;height:100%;position:absolute;inset:0}
+.region-hit{cursor:pointer;transition:opacity .15s}
+.region-hit:hover{opacity:.75}
+.map-info{display:flex;flex-direction:column;gap:8px}
+.info-card{background:#fff;border:2px solid rgba(26,60,110,.15);border-radius:14px;overflow:hidden;flex:1;display:flex;flex-direction:column}
+.info-img{height:140px;background:var(--mu-dark);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:72px;flex-shrink:0}
+.info-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,32,64,.8) 0%,transparent 60%)}
+.info-img-title{position:absolute;bottom:10px;right:12px;font-size:16px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.info-body{padding:12px 14px;flex:1;overflow-y:auto}
+.info-region-name{font-size:14px;font-weight:700;color:var(--mu-blue);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.info-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.info-fact{font-size:12px;color:var(--mu-bark);line-height:1.6;margin-bottom:8px}
+.info-birds-title{font-size:11px;font-weight:700;color:var(--mu-blue);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.info-birds-grid{display:flex;flex-direction:column;gap:4px}
+.info-bird-row{display:flex;align-items:center;gap:8px;padding:4px 6px;background:var(--mu-bg);border-radius:6px}
+.info-bird-em{font-size:18px;width:24px;text-align:center}
+.info-bird-name{font-size:11px;font-weight:700;color:var(--mu-dark);flex:1}
+.info-bird-en{font-size:10px;color:rgba(0,0,0,.4)}
+.map-legend{display:flex;flex-wrap:wrap;gap:8px}
+.ml-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--mu-dark);cursor:pointer;padding:3px 8px;border-radius:10px;border:1.5px solid transparent;transition:all .14s}
+.ml-item:hover{border-color:currentColor}
+.ml-item.active{border-color:currentColor;background:#fff}
+.ml-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.map-hint{font-size:11px;color:rgba(26,60,110,.5);font-style:italic}
+
+/* ═══ AR / COLLECTION ═══ */
+#ars{background:var(--mu-bg);flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ar-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1}
+.ar-camera{background:var(--mu-dark);border-radius:14px;border:3px solid var(--mu-gold);overflow:hidden;min-height:280px;display:flex;flex-direction:column}
+.ar-cam-top{padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.ar-tag{background:rgba(200,148,26,.85);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;color:#fff}
+.ar-xp{background:rgba(42,95,168,.85);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;color:#fff}
+.ar-view{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.ar-vf{width:100px;height:100px;border:2px solid var(--mu-gold-light);border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center;animation:pulse3 2s ease-in-out infinite}
+@keyframes pulse3{0%,100%{border-color:var(--mu-gold-light)}50%{border-color:rgba(232,184,75,.3)}}
+.arc{position:absolute;width:14px;height:14px;border-color:var(--mu-gold-light);border-style:solid}
+.arc.tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:3px 0 0 0}
+.arc.tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 3px 0 0}
+.arc.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 3px}
+.arc.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 3px 0}
+.ar-found-tag{position:absolute;bottom:18px;background:rgba(200,148,26,.92);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:#0f2040}
+.ar-bot{padding:8px 10px;background:rgba(0,0,0,.6)}
+.ar-shutter{width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid #ccc;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+.ar-prow{display:flex;gap:4px;justify-content:center;margin-bottom:3px}
+.ar-ps{width:32px;height:40px;border-radius:5px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px}
+.ar-ps.found{background:rgba(200,148,26,.25);border-color:var(--mu-gold)}
+.ar-panel{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.ar-card{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;padding:10px 12px}
+.ar-ct{font-size:11px;font-weight:700;color:var(--mu-blue);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.ar-brow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.ar-brow:last-child{border:none}
+.ar-bem{font-size:22px;width:28px;text-align:center}
+.ar-bname{font-size:11px;font-weight:700;color:var(--mu-dark);flex:1}
+.ar-st{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+.ar-stf{background:#dcfce7;color:#166534}
+.ar-stm{background:#fef3c7;color:#92400e}
+.ar-blue{background:var(--mu-blue);border-radius:12px;padding:10px 12px}
+.ar-bt{font-size:11px;font-weight:700;color:var(--mu-gold-light);margin-bottom:4px}
+.ar-bd{font-size:11px;color:rgba(255,255,255,.8);line-height:1.5}
+.ar-pc{background:#fff;border:2px solid rgba(26,60,110,.12);border-radius:12px;padding:10px 12px}
+.ar-rr{margin-bottom:5px}
+.ar-rrt{display:flex;justify-content:space-between;margin-bottom:2px}
+.ar-rrn{font-size:11px;font-weight:700;color:var(--mu-dark)}
+.ar-rrc{font-size:10px;color:rgba(0,0,0,.4)}
+.ar-rrb{height:6px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden}
+.ar-rrf{height:100%;border-radius:3px}
+
+/* WIN */
+#winov{display:none;position:fixed;inset:0;background:rgba(15,32,64,.9);z-index:999;align-items:center;justify-content:center}
+#winov.on{display:flex}
+#winbox{background:var(--mu-sand);border:3px solid var(--mu-gold);border-radius:20px;padding:38px 46px;text-align:center;max-width:400px;width:92%}
+#wico{font-size:72px;margin-bottom:10px}
+#wtit{font-size:28px;font-weight:700;color:var(--mu-blue);margin-bottom:6px}
+#wsc{font-size:14px;color:var(--mu-bark);margin-bottom:20px;font-weight:600;line-height:1.5}
+#wsets{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:24px}
+.wst{font-size:12px;font-weight:700;padding:4px 12px;border-radius:6px;color:#fff}
+#wagain{font-family:inherit;font-size:16px;font-weight:700;padding:13px 40px;border-radius:10px;border:none;background:var(--mu-gold);color:var(--mu-dark);cursor:pointer;box-shadow:0 3px 0 var(--mu-bark)}
+#wagain:hover{background:var(--mu-gold-light)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="nav">
+  <div class="nav-brand">
+    <div class="nav-lm">🐦</div>
+    <div>
+      <div class="nav-title">Bird <span>Kwartet</span></div>
+      <div class="nav-sub">מוזיאון הטבע ע"ש שטיינהרדט · אוניברסיטת ת"א</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="showScreen('game',this)">משחק</button>
+    <button class="ntab" onclick="showScreen('map',this)">מפה</button>
+    <button class="ntab" onclick="showScreen('ar',this)">אוסף הציפורים שלי</button>
+  </div>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div id="game" class="screen on">
+<div id="gs">
+
+  <div class="gbar">
+    <div class="gpill">האוסף שלך: <b id="ps">0</b> סטים</div>
+    <div class="gturn gt-y" id="tbadge">התור שלך!</div>
+    <div class="gpill">חבילה: <b id="dk">0</b> קלפים</div>
+  </div>
+
+  <div id="stmsg">ברוך הבא! בחר אזור, ציפור, ולחץ "בקש קלף!"</div>
+
+  <!-- SCIENTIST CARD -->
+  <div id="scientist-card">
+    <div class="sci-avatar" id="sci-av">🔬</div>
+    <div class="sci-info">
+      <div class="sci-name" id="sci-name">ד"ר מיכל לוי</div>
+      <div class="sci-role" id="sci-role">אורניתולוגית · מומחית ציפורי ישראל</div>
+      <div class="sci-cards-row" id="sci-cards"></div>
+    </div>
+    <div class="sci-stats">
+      <div class="sci-stat">סטים: <b id="cs">0</b></div>
+      <div class="sci-stat">קלפים: <b id="cc">0</b></div>
+    </div>
+  </div>
+
+  <div id="areas"></div>
+
+  <div id="ask-sec">
+    <div class="ask-t">🐦 בקש קלף מהמדענית</div>
+    <div class="ask-row">
+      <span class="ask-lbl">1. אזור:</span>
+      <div class="fbtns" id="fbtns"></div>
+    </div>
+    <div class="ask-row">
+      <span class="ask-lbl">2. ציפור:</span>
+      <div class="cbtns" id="cbtns"></div>
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:center">
+      <button class="ago" id="abtn" disabled onclick="doAsk()">בקש קלף! 🐦</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div id="map" class="screen">
+<div id="ms">
+  <div class="page-title">מפת ציפורי ישראל</div>
+  <div class="page-sub">לחץ על אזור במפה לגילוי עובדות וציפורים</div>
+  <div class="map-layout">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="map-wrap">
+        <svg id="map-svg" viewBox="0 0 380 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <rect width="380" height="500" fill="#bde0f5"/>
+          <!-- sea -->
+          <path d="M0 0 L112 0 L95 55 L85 115 L80 195 L74 275 L68 355 L63 415 L0 415Z" fill="#7ec8e3" opacity=".5"/>
+          <!-- Israel -->
+          <path d="M112 26 L192 16 L234 36 L254 78 L244 128 L254 178 L244 228 L234 258 L256 300 L259 340 L244 378 L234 418 L194 458 L174 488 L154 508 L142 496 L130 474 L120 446 L110 416 L100 376 L90 334 L86 294 L92 256 L81 214 L76 174 L82 134 L88 94 L95 55 L105 26Z"
+            fill="#f0ead8" stroke="#c8941a" stroke-width="1.5"/>
+          <!-- Dead Sea -->
+          <ellipse cx="212" cy="258" rx="13" ry="20" fill="#7ec8e3" opacity=".7"/>
+          <text x="212" y="253" text-anchor="middle" font-size="6.5" fill="#1a3c6e" font-family="Segoe UI,sans-serif" opacity=".8">ים המלח</text>
+          <!-- Jordan river -->
+          <path d="M194 76 Q206 116 200 158 Q194 198 206 238" fill="none" stroke="#7ec8e3" stroke-width="2" opacity=".7"/>
+
+          <!-- clickable regions -->
+          <ellipse class="region-hit" id="rh-hula"  cx="204" cy="86"  rx="34" ry="26" fill="#1a5fa8" opacity=".22" onclick="selectRegion('hula')"/>
+          <ellipse class="region-hit" id="rh-galil" cx="170" cy="146" rx="44" ry="36" fill="#2d6a2d" opacity=".2"  onclick="selectRegion('galil')"/>
+          <ellipse class="region-hit" id="rh-carml" cx="122" cy="216" rx="28" ry="33" fill="#c2410c" opacity=".18" onclick="selectRegion('carml')"/>
+          <rect    class="region-hit" id="rh-coast" x="85"  y="256"  width="50" height="76" rx="9"  fill="#0e7490" opacity=".18" onclick="selectRegion('coast')"/>
+          <ellipse class="region-hit" id="rh-negev" cx="178" cy="374" rx="52" ry="56" fill="#c8941a" opacity=".2"  onclick="selectRegion('negev')"/>
+          <ellipse class="region-hit" id="rh-eilat" cx="190" cy="474" rx="26" ry="20" fill="#7c3aed" opacity=".22" onclick="selectRegion('eilat')"/>
+
+          <!-- labels -->
+          <text x="204" y="70"  text-anchor="middle" font-size="9"   font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">עמק החולה</text>
+          <text x="204" y="83"  text-anchor="middle" font-size="17" pointer-events="none">🦢</text>
+          <text x="170" y="132" text-anchor="middle" font-size="9"   font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">הגליל</text>
+          <text x="170" y="145" text-anchor="middle" font-size="17" pointer-events="none">🦉</text>
+          <text x="120" y="202" text-anchor="middle" font-size="8.5" font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">הכרמל</text>
+          <text x="120" y="215" text-anchor="middle" font-size="16" pointer-events="none">🐦</text>
+          <text x="106" y="278" text-anchor="middle" font-size="8.5" font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">החוף</text>
+          <text x="106" y="291" text-anchor="middle" font-size="16" pointer-events="none">🌊</text>
+          <text x="178" y="360" text-anchor="middle" font-size="9"   font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">הנגב</text>
+          <text x="178" y="373" text-anchor="middle" font-size="17" pointer-events="none">🦅</text>
+          <text x="190" y="462" text-anchor="middle" font-size="8.5" font-weight="700" fill="#0f2040" font-family="Segoe UI,sans-serif" pointer-events="none">אילת</text>
+          <text x="190" y="475" text-anchor="middle" font-size="16" pointer-events="none">🦩</text>
+
+          <!-- compass -->
+          <g transform="translate(344,36)">
+            <circle r="17" fill="rgba(255,255,255,.8)" stroke="#c8941a" stroke-width="1.2"/>
+            <text text-anchor="middle" y="-5" font-size="8" font-weight="700" fill="#0f2040" font-family="sans-serif">N</text>
+            <text text-anchor="middle" y="12" font-size="8" font-weight="700" fill="#0f2040" font-family="sans-serif">S</text>
+            <line x1="0" y1="-11" x2="0" y2="11" stroke="#c8941a" stroke-width="1.3"/>
+            <line x1="-11" y1="0" x2="11" y2="0" stroke="#c8941a" stroke-width="1.3"/>
+            <polygon points="0,-11 -3,-5 3,-5" fill="#c8941a"/>
+          </g>
+          <text x="190" y="496" text-anchor="middle" font-size="7.5" fill="#0f2040" opacity=".4" font-family="Segoe UI,sans-serif">מוזיאון הטבע ע"ש שטיינהרדט · אוניברסיטת ת"א</text>
+        </svg>
+      </div>
+      <div class="map-legend" id="map-legend"></div>
+      <div class="map-hint">לחץ על אזור במפה לפרטים ←</div>
+    </div>
+
+    <!-- INFO PANEL -->
+    <div class="map-info">
+      <div class="info-card" id="info-card">
+        <div class="info-img" id="info-img">
+          <div style="font-size:80px;opacity:.4">🗺️</div>
+          <div class="info-img-overlay"></div>
+          <div class="info-img-title" id="info-img-title"></div>
+        </div>
+        <div class="info-body">
+          <div class="info-region-name" id="info-rname">
+            <span>בחר אזור במפה</span>
+          </div>
+          <div class="info-fact" id="info-fact">לחץ על אחד מהאזורים הצבעוניים במפה לגילוי עובדות מרתקות על הציפורים שחיות שם.</div>
+          <div class="info-birds-title" id="info-bt" style="display:none">ציפורי האזור</div>
+          <div class="info-birds-grid" id="info-birds"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ COLLECTION / AR ═══ -->
+<div id="ar" class="screen">
+<div id="ars">
+  <div class="page-title">אוסף הציפורים שלי</div>
+  <div class="page-sub">ציפורים שאספת בסיור AR במוזיאון · כוון את המצלמה לתחנות</div>
+  <div class="ar-layout">
+    <div class="ar-camera">
+      <div class="ar-cam-top">
+        <div class="ar-tag">📍 אזור הגליל</div>
+        <div class="ar-xp">+50 XP</div>
+      </div>
+      <div class="ar-view">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:.22">🦉</div>
+        <div class="ar-vf">
+          <div class="arc tl"></div><div class="arc tr"></div>
+          <div class="arc bl"></div><div class="arc br"></div>
+          <div style="font-size:40px">🦉</div>
+        </div>
+        <div class="ar-found-tag">ינשוף חום זוהה!</div>
+      </div>
+      <div class="ar-bot">
+        <div class="ar-shutter">📸</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.45);text-align:center;margin-bottom:4px">אוסף גליל (2/4)</div>
+        <div class="ar-prow">
+          <div class="ar-ps found">🦉</div><div class="ar-ps found">🦅</div>
+          <div class="ar-ps">?</div><div class="ar-ps">?</div>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,.38);text-align:center;margin-top:4px">עוד 2 ציפורים להשלמת הגליל</div>
+      </div>
+    </div>
+
+    <div class="ar-panel">
+      <div class="ar-card">
+        <div class="ar-ct">ציפורי הגליל — מה לחפש</div>
+        <div class="ar-brow"><div class="ar-bem">🦉</div><div class="ar-bname">ינשוף חום</div><div class="ar-st ar-stf">נמצא ✓</div></div>
+        <div class="ar-brow"><div class="ar-bem">🦅</div><div class="ar-bname">עיט</div><div class="ar-st ar-stf">נמצא ✓</div></div>
+        <div class="ar-brow"><div class="ar-bem">🐦</div><div class="ar-bname">נקר ירוק</div><div class="ar-st ar-stm">חסר</div></div>
+        <div class="ar-brow"><div class="ar-bem">🐤</div><div class="ar-bname">שחרור</div><div class="ar-st ar-stm">חסר</div></div>
+      </div>
+      <div class="ar-blue">
+        <div class="ar-bt">💡 טיפ לחיפוש</div>
+        <div class="ar-bd">הנקר הירוק נמצא ליד עצי האורן בקומה 2 — תחנה B4. חפש את הצבע הירוק הבוהק!</div>
+      </div>
+      <div class="ar-pc">
+        <div class="ar-ct">התקדמות כוללת</div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">עמק החולה</span><span class="ar-rrc">4/4 ✓</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:100%;background:#1a5fa8"></div></div></div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">הגליל</span><span class="ar-rrc">2/4</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:50%;background:#2d6a2d"></div></div></div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">הנגב</span><span class="ar-rrc">1/4</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:25%;background:#c8941a"></div></div></div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">החוף</span><span class="ar-rrc">0/4</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:0;background:#0e7490"></div></div></div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">אילת</span><span class="ar-rrc">0/4</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:0;background:#7c3aed"></div></div></div>
+        <div class="ar-rr"><div class="ar-rrt"><span class="ar-rrn">הכרמל</span><span class="ar-rrc">0/4</span></div><div class="ar-rrb"><div class="ar-rrf" style="width:0;background:#c2410c"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- WIN -->
+<div id="winov">
+  <div id="winbox">
+    <div id="wico"></div>
+    <div id="wtit"></div>
+    <div id="wsc"></div>
+    <div id="wsets"></div>
+    <button id="wagain" onclick="startGame()">שחק שוב! 🐦</button>
+  </div>
+</div>
+</div>
+
+<script>
+/* ── DATA ── */
+const RFAM=[
+  {id:'hula', name:'עמק החולה',col:'#1a5fa8',bg:'#dbeafe',icon:'🌊',
+   birds:[{he:'עגור אפור',en:'Common Crane',em:'🦢'},{he:'דיה לבנה',en:'White Pelican',em:'🦩'},{he:'שלמונית',en:'Kingfisher',em:'🐦'},{he:'קורמורן',en:'Cormorant',em:'🐧'}]},
+  {id:'galil',name:'הגליל',    col:'#2d6a2d',bg:'#dcfce7',icon:'🌿',
+   birds:[{he:'ינשוף חום',en:'Tawny Owl',em:'🦉'},{he:'עיט',en:'Short-toed Eagle',em:'🦅'},{he:'נקר ירוק',en:'Green Woodpecker',em:'🐦'},{he:'שחרור',en:'Blackbird',em:'🐤'}]},
+  {id:'negev',name:'הנגב',     col:'#c8941a',bg:'#fef3c7',icon:'☀️',
+   birds:[{he:'שקנאי',en:'Lappet-faced Vulture',em:'🦅'},{he:'ינשוף מדבר',en:'Pharaoh Eagle-owl',em:'🦉'},{he:'שריקן',en:'Trumpeter Finch',em:'🐦'},{he:'חנק',en:'Desert Wheatear',em:'🐦'}]},
+  {id:'coast',name:'החוף',     col:'#0e7490',bg:'#cffafe',icon:'🌊',
+   birds:[{he:'שחף',en:'Yellow-legged Gull',em:'🌊'},{he:'שחרורית',en:'Little Tern',em:'🕊️'},{he:'מדמורה',en:'Kentish Plover',em:'🐦'},{he:'חסידה',en:'White Stork',em:'🦩'}]},
+  {id:'eilat',name:'אילת',     col:'#7c3aed',bg:'#ede9fe',icon:'🌅',
+   birds:[{he:'פלמינגו',en:'Greater Flamingo',em:'🦩'},{he:'שלוי',en:'Sooty Falcon',em:'🐦'},{he:'עיט דיג',en:'Osprey',em:'🦅'},{he:'חסידון',en:'Little Egret',em:'🕊️'}]},
+  {id:'carml',name:'הכרמל',    col:'#c2410c',bg:'#ffedd5',icon:'🌲',
+   birds:[{he:'בולבול',en:'Common Bulbul',em:'🐦'},{he:'סיס',en:'Common Swift',em:'💨'},{he:'דרור',en:'House Sparrow',em:'🐦'},{he:'נץ',en:'Sparrowhawk',em:'🦅'}]},
+];
+
+const REGION_INFO={
+  hula:{
+    emoji:'🌿',bg:'#1e3a5f',
+    fact:'עמק החולה הוא אחת מתחנות הנדידה החשובות בעולם. כ-500 מיליון ציפורים עוברות כאן בכל שנה במסעותיהן בין אפריקה לאירופה. אגמון החולה המשוחזר הוא מוקד צפייה עולמי, ומושך עשרות אלפי מבקרים בעונת הנדידה.',
+    photo:'🦢',season:'חורף ونדידה',area:'14,000 דונם'
+  },
+  galil:{
+    emoji:'🌄',bg:'#1a3c1a',
+    fact:'הגליל העליון מוכסה ביערות ים-תיכוניים ומצוקות גיר — מגוון בתי גידול שמאפשר לעשרות מיני ציפורים לקנן. ינשוף החום הוא ציפור המדינה של ישראל, ונפוץ במיוחד באזורי היער.',
+    photo:'🌲',season:'כל השנה',area:'ג\'בל ג\'רמק — 1208 מ\''
+  },
+  negev:{
+    emoji:'🏜️',bg:'#4a2e00',
+    fact:'מדבר הנגב משתרע על פני 60% משטח ישראל. הציפורים כאן פיתחו הסתגלויות מיוחדות לתנאי הקיצון: עמידות לחום, יכולת מציאת מים ממרחקים ויוצאי דופן בנוצות לבנות המחזירות שמש. המכתשים הם פנינות עולמיות.',
+    photo:'🦅',season:'חורף ואביב',area:'13,000 קמ"ר'
+  },
+  coast:{
+    emoji:'🌊',bg:'#0a3a4a',
+    fact:'חוף הים התיכון של ישראל הוא בית לציפורי חוף נדירות. בעבר קיננו כאן מאות זוגות של מדמורה וטבלן — כיום הם בסכנת הכחדה עקב פיתוח. תחנות הצפרות בחוף מנטרות את מצבן.',
+    photo:'🌊',season:'כל השנה',area:'190 ק"מ קו חוף'
+  },
+  eilat:{
+    emoji:'🌅',bg:'#2d0a5e',
+    fact:'אילת ממוקמת על "צוואר הבקבוק" של נתיב הנדידה — כל הציפורים שעוברות בין אפריקה לאסיה חייבות לעבור דרכה. תחנת צפרות אילת (IBRCE) היא מפורסמת עולמית, וסופרת עד מיליון ציפורים בעונה.',
+    photo:'🦩',season:'אביב וסתיו',area:'שמורת עין נצבה'
+  },
+  carml:{
+    emoji:'🌿',bg:'#3d1500',
+    fact:'הכרמל הוא הר הכי מגוון ביולוגית בישראל. יערות האורן, השרוב והאלון יוצרים פסיפס בתי גידול. הבולבול — ציפור עירונית מאוד — ניתן לשמוע בכל גינה. הסיס מקנן כאן בקולוניות גדולות תחת הגגות.',
+    photo:'🌿',season:'כל השנה',area:'פארק כרמל — 83 קמ"ר'
+  }
+};
+
+const SCIENTISTS=[
+  {name:'ד"ר מיכל לוי',   role:'אורניתולוגית · מומחית ציפורי ישראל',   av:'👩‍🔬'},
+  {name:'פרופ\' אבי כהן', role:'אקולוג ציפורים · מוזיאון הטבע ת"א',    av:'👨‍🏫'},
+  {name:'ד"ר רונית שרון', role:'חוקרת נדידת ציפורים · אוניברסיטת חיפה',av:'👩‍💻'},
+  {name:'ד"ר יואב ברק',   role:'מנהל מרכז מדע אזרחי · SMNH',            av:'🧑‍🔬'},
+];
+
+/* ── GAME STATE ── */
+let pH=[],cH=[],deck=[],pS=[],cS=[],selF=null,selC=null,myTurn=true,busy=false;
+let curSci=SCIENTISTS[0];
+const getF=id=>RFAM.find(f=>f.id===id);
+
+function buildAreas(){
+  const el=document.getElementById('areas');el.innerHTML='';
+  RFAM.forEach(f=>{
+    const d=document.createElement('div');d.className='area';d.id='area-'+f.id;
+    d.innerHTML=`<div class="area-head" style="background:${f.col}">
+      <div class="area-deco">${f.icon}${f.icon}</div>
+      <div class="area-name">${f.name}</div></div>
+      <div class="area-slots" id="slots-${f.id}">
+        ${f.birds.map((_,i)=>`<div class="slot" id="slot-${f.id}-${i}">?</div>`).join('')}
+      </div>`;
+    el.appendChild(d);
+  });
+}
+
+function buildDeck(){
+  const d=[];
+  RFAM.forEach(f=>f.birds.forEach(b=>d.push({fam:f.id,he:b.he,en:b.en,em:b.em})));
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function startGame(){
+  document.getElementById('winov').classList.remove('on');
+  curSci=SCIENTISTS[Math.floor(Math.random()*SCIENTISTS.length)];
+  document.getElementById('sci-av').textContent=curSci.av;
+  document.getElementById('sci-name').textContent=curSci.name;
+  document.getElementById('sci-role').textContent=curSci.role;
+  deck=buildDeck();pH=deck.splice(0,7);cH=deck.splice(0,7);
+  pS=[];cS=[];selF=null;selC=null;myTurn=true;busy=false;
+  buildAreas();chk(pH,pS);chk(cH,cS);
+  setSt('ברוך הבא! '+curSci.name+' ממתינה — בחר אזור וציפור ובקש קלף!','');
+  render();
+}
+
+function chk(hand,sets){
+  RFAM.forEach(f=>{
+    if(sets.includes(f.id))return;
+    if(hand.filter(c=>c.fam===f.id).length===4){
+      sets.push(f.id);
+      for(let i=hand.length-1,n=0;i>=0&&n<4;i--)
+        if(hand[i].fam===f.id){hand.splice(i,1);n++;}
+    }
+  });
+}
+
+function updateSlots(){
+  RFAM.forEach(f=>{
+    const myCards=pH.filter(c=>c.fam===f.id);
+    const isSet=pS.includes(f.id);
+    for(let i=0;i<4;i++){
+      const slot=document.getElementById('slot-'+f.id+'-'+i);
+      if(!slot)return;
+      const card=isSet?f.birds[i]:myCards[i];
+      if(card){
+        slot.className='slot filled';
+        slot.style.borderColor=f.col;
+        slot.innerHTML='<div class="slot-em">'+(card.em||f.birds[i].em)+'</div><div class="slot-nm">'+(card.he||f.birds[i].he)+'</div>';
+      } else {
+        slot.className='slot';slot.style.borderColor='';slot.innerHTML='?';
+      }
+    }
+    const a=document.getElementById('area-'+f.id);
+    if(a){a.style.borderColor=isSet?f.col:'rgba(26,60,110,.12)';a.style.borderWidth=isSet?'3px':'2px';}
+  });
+}
+
+function render(){
+  document.getElementById('ps').textContent=pS.length;
+  document.getElementById('cs').textContent=cS.length;
+  document.getElementById('cc').textContent=cH.length;
+  document.getElementById('dk').textContent=deck.length;
+  const tb=document.getElementById('tbadge');
+  tb.textContent=myTurn?'התור שלך!':curSci.name+' חושבת...';
+  tb.className='gturn '+(myTurn?'gt-y':'gt-s');
+  const sc=document.getElementById('sci-cards');sc.innerHTML='';
+  cH.forEach(function(){const d=document.createElement('div');d.className='sci-back';sc.appendChild(d);});
+  updateSlots();renderAsk();checkEnd();
+}
+
+function renderAsk(){
+  const mf=[...new Set(pH.map(c=>c.fam))];
+  const fb=document.getElementById('fbtns');fb.innerHTML='';
+  mf.forEach(function(fid){
+    const f=getF(fid);const b=document.createElement('button');
+    b.className='fbtn'+(selF===fid?' act':'');
+    b.disabled=!myTurn||busy;
+    b.style.cssText='background:'+(selF===fid?f.bg:'var(--mu-bg)')+';color:'+f.col+';border-color:'+f.col;
+    b.innerHTML='<span>'+f.icon+'</span>'+f.name;
+    b.onclick=function(){selF=fid;selC=null;renderAsk();};
+    fb.appendChild(b);
+  });
+  const cb=document.getElementById('cbtns');cb.innerHTML='';
+  if(selF){
+    const f=getF(selF);
+    const owned=pH.filter(c=>c.fam===selF).map(c=>c.he);
+    const miss=f.birds.filter(b=>!owned.includes(b.he));
+    if(!miss.length){cb.innerHTML='<span style="font-size:11px;color:var(--mu-bark)">יש לך את כולן!</span>';}
+    else miss.forEach(function(b){
+      const btn=document.createElement('button');
+      btn.className='cbtn'+(selC===b.he?' act':'');
+      btn.disabled=!myTurn||busy;
+      btn.textContent=b.em+' '+b.he;
+      btn.onclick=function(){selC=b.he;renderAsk();};
+      cb.appendChild(btn);
+    });
+  } else cb.innerHTML='<span style="font-size:11px;color:var(--mu-bark)">בחר אזור קודם</span>';
+  document.getElementById('abtn').disabled=!(myTurn&&!busy&&selF&&selC);
+}
+
+function doAsk(){
+  if(!myTurn||busy||!selF||!selC)return;busy=true;
+  const idx=cH.findIndex(c=>c.fam===selF&&c.he===selC);
+  const cn=selC,fn=getF(selF).name,sn=curSci.name.split(' ')[0];
+  if(idx!==-1){
+    const card=cH.splice(idx,1)[0];pH.push(card);chk(pH,pS);
+    setSt('✓ '+sn+' נותנת לך '+card.em+' '+card.he+'! הציפור נכנסת לאזור '+fn+'. בקש שוב!','g');
+    if(cH.length===0&&deck.length>0){cH.push(deck.splice(0,1)[0]);chk(cH,cS);}
+    selF=null;selC=null;busy=false;render();
+  } else {
+    setSt('✗ '+sn+' אומרת: "לך לדוג!" — אין '+cn+'. שלפת קלף. תור '+sn+'.','b');
+    if(deck.length>0){pH.push(deck.splice(0,1)[0]);chk(pH,pS);}
+    selF=null;selC=null;myTurn=false;render();setTimeout(sciTurn,1800);
+  }
+}
+
+function sciTurn(){
+  if(cH.length===0){myTurn=true;busy=false;setSt('התור שלך!','');render();return;}
+  const fc={};cH.forEach(c=>{fc[c.fam]=(fc[c.fam]||0)+1;});
+  const bf=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0][0];
+  const f=getF(bf);
+  const owned=cH.filter(c=>c.fam===bf).map(c=>c.he);
+  const miss=f.birds.filter(b=>!owned.includes(b.he));
+  if(!miss.length){myTurn=true;busy=false;setSt('התור שלך!','');render();return;}
+  const want=miss[Math.floor(Math.random()*miss.length)];
+  const sn=curSci.name.split(' ')[0];
+  const idx=pH.findIndex(c=>c.fam===bf&&c.he===want.he);
+  if(idx!==-1){
+    const card=pH.splice(idx,1)[0];cH.push(card);chk(cH,cS);
+    setSt(sn+' מבקשת '+want.em+' '+want.he+' — היה לך! '+sn+' מקבלת עוד תור...','b');
+    if(pH.length===0&&deck.length>0){pH.push(deck.splice(0,1)[0]);chk(pH,pS);}
+    render();setTimeout(sciTurn,1600);
+  } else {
+    setSt(sn+' ביקשה '+want.em+' '+want.he+' — "לך לדוג!" התור שלך.','g');
+    if(deck.length>0){cH.push(deck.splice(0,1)[0]);chk(cH,cS);}
+    myTurn=true;busy=false;render();
+  }
+}
+
+function checkEnd(){
+  if(pS.length+cS.length>=RFAM.length||(pH.length===0&&cH.length===0&&deck.length===0)){
+    setTimeout(function(){
+      const p=pS.length,c=cS.length,sn=curSci.name;
+      document.getElementById('wico').textContent=p>c?'🏆':p===c?'🤝':'😢';
+      document.getElementById('wtit').textContent=p>c?'ניצחת!':p===c?'תיקו!':'המדענית ניצחה!';
+      document.getElementById('wsc').textContent='אתה: '+p+' סטים · '+sn+': '+c+' סטים';
+      const ws=document.getElementById('wsets');ws.innerHTML='';
+      pS.forEach(function(sid){const f=getF(sid);const t=document.createElement('span');t.className='wst';t.style.background=f.col;t.textContent=f.name;ws.appendChild(t);});
+      cS.forEach(function(sid){const f=getF(sid);const t=document.createElement('span');t.className='wst';t.style.background='#7f1d1d';t.textContent=f.name+' ('+sn.split(' ')[0]+')';ws.appendChild(t);});
+      document.getElementById('winov').classList.add('on');
+    },600);
+  }
+}
+
+function setSt(msg,type){
+  const el=document.getElementById('stmsg');
+  el.textContent=msg;
+  el.style.borderColor=type==='g'?'#16a34a':type==='b'?'#dc2626':'rgba(26,60,110,.15)';
+  el.style.color=type==='g'?'#15803d':type==='b'?'#991b1b':'#1a3c6e';
+}
+
+/* ── MAP INTERACTIVITY ── */
+const REGION_COLORS={hula:'#1a5fa8',galil:'#2d6a2d',negev:'#c8941a',coast:'#0e7490',eilat:'#7c3aed',carml:'#c2410c'};
+const REGION_NAMES={hula:'עמק החולה',galil:'הגליל',negev:'הנגב',coast:'החוף',eilat:'אילת',carml:'הכרמל'};
+
+function buildMapLegend(){
+  const el=document.getElementById('map-legend');el.innerHTML='';
+  Object.entries(REGION_COLORS).forEach(function(e){
+    const id=e[0],col=e[1];
+    const d=document.createElement('div');d.className='ml-item';d.id='leg-'+id;
+    d.innerHTML='<div class="ml-dot" style="background:'+col+'"></div>'+REGION_NAMES[id];
+    d.onclick=function(){selectRegion(id);};
+    el.appendChild(d);
+  });
+}
+
+function selectRegion(id){
+  /* highlight selected */
+  document.querySelectorAll('.region-hit').forEach(function(r){r.style.opacity='';});
+  const hit=document.getElementById('rh-'+id);
+  if(hit){hit.style.opacity='.55';}
+  document.querySelectorAll('.ml-item').forEach(function(l){l.classList.remove('active');});
+  const leg=document.getElementById('leg-'+id);
+  if(leg)leg.classList.add('active');
+
+  const info=REGION_INFO[id];
+  const fam=getF(id);
+  const col=REGION_COLORS[id];
+
+  /* image area — big emoji scene */
+  document.getElementById('info-img').style.background=info.bg;
+  document.getElementById('info-img').innerHTML=
+    '<div style="font-size:80px;opacity:.55">'+info.photo+'</div>'+
+    '<div class="info-img-overlay"></div>'+
+    '<div class="info-img-title">'+REGION_NAMES[id]+'</div>';
+
+  /* header */
+  document.getElementById('info-rname').innerHTML=
+    '<span>'+REGION_NAMES[id]+'</span>'+
+    '<span class="info-badge" style="background:'+col+'">'+info.season+'</span>'+
+    '<span class="info-badge" style="background:var(--mu-bark)">'+info.area+'</span>';
+
+  document.getElementById('info-fact').textContent=info.fact;
+  document.getElementById('info-bt').style.display='';
+
+  /* birds */
+  const bg=document.getElementById('info-birds');bg.innerHTML='';
+  fam.birds.forEach(function(b){
+    const d=document.createElement('div');d.className='info-bird-row';
+    d.innerHTML='<div class="info-bird-em">'+b.em+'</div><div class="info-bird-name">'+b.he+'</div><div class="info-bird-en">'+b.en+'</div>';
+    bg.appendChild(d);
+  });
+}
+
+function showScreen(id,btn){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  if(btn)btn.classList.add('on');
+}
+
+buildMapLegend();
+startGame();
+</script>
+</body>
+</html>
